@@ -1,0 +1,34 @@
+[0m07:06:04.843561 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7fd6000ed0d0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7fd6020551f0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7fd600627860>]}
+
+
+============================== 07:06:04.847964 | 2de3b7b1-3c4f-48ed-a06d-ae87a4faa2fb ==============================
+[0m07:06:04.847964 [info ] [MainThread]: Running with dbt=1.11.2
+[0m07:06:04.848764 [debug] [MainThread]: running dbt with arguments {'debug': 'False', 'printer_width': '80', 'use_experimental_parser': 'False', 'write_json': 'True', 'indirect_selection': 'eager', 'log_format': 'default', 'invocation_command': 'dbt init', 'introspect': 'True', 'target_path': 'None', 'version_check': 'True', 'use_colors': 'True', 'fail_fast': 'False', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'send_anonymous_usage_stats': 'True', 'empty': 'None', 'log_path': 'logs', 'partial_parse': 'True', 'quiet': 'False', 'cache_selected_only': 'False', 'warn_error': 'None', 'static_parser': 'True', 'profiles_dir': '/home/codespace/.dbt', 'no_print': 'None', 'log_cache_events': 'False'}
+[0m07:06:04.858526 [info ] [MainThread]: Creating dbt configuration folder at /home/codespace/.dbt
+[0m07:06:43.667254 [debug] [MainThread]: Starter project path: /usr/local/python/3.12.1/lib/python3.12/site-packages/dbt/include/starter_project
+[0m07:06:43.673288 [info ] [MainThread]: 
+Your new dbt project "the_look_database" was created!
+
+For more information on how to configure the profiles.yml file,
+please consult the dbt documentation here:
+
+  https://docs.getdbt.com/docs/configure-your-profile
+
+One more thing:
+
+Need help? Don't hesitate to reach out to us via GitHub issues or on Slack:
+
+  https://community.getdbt.com/
+
+Happy modeling!
+
+[0m07:06:43.674862 [info ] [MainThread]: Setting up your profile.
+[0m07:06:59.346086 [debug] [MainThread]: Snowflake adapter: Setting snowflake.connector to ERROR (file logging only)
+[0m07:06:59.346742 [debug] [MainThread]: Snowflake adapter: Setting botocore to ERROR (file logging only)
+[0m07:06:59.347290 [debug] [MainThread]: Snowflake adapter: Setting boto3 to ERROR (file logging only)
+[0m07:14:41.659071 [info ] [MainThread]: Profile the_look_database written to /home/codespace/.dbt/profiles.yml using target's profile_template.yml and your supplied values. Run 'dbt debug' to validate the connection.
+[0m07:14:41.661169 [debug] [MainThread]: Resource report: {"command_name": "init", "command_success": true, "command_wall_clock_time": 516.88116, "process_in_blocks": "20736", "process_kernel_time": 0.306891, "process_mem_max_rss": "142668", "process_out_blocks": "96", "process_user_time": 3.135313}
+[0m07:14:41.662093 [debug] [MainThread]: Command `dbt init` succeeded at 07:14:41.661938 after 516.88 seconds
+[0m07:14:41.663461 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7fd5fe19ade0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7fd5fdfc4cb0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x7fd5fde11a60>]}
+[0m07:14:41.664486 [debug] [MainThread]: Flushing usage events
+[0m07:14:42.671121 [debug] [MainThread]: An error was encountered while trying to flush usage events
