@@ -1,0 +1,27 @@
+version: 2
+
+sources:
+  - name: the_look_ecommerce
+    database: raw
+    schema: the_look_ecommerce
+    tables:
+      - name: distribution_centers
+        description: Cloned Snowflake DB tables listing distribution centers. 
+
+      - name: events
+        description: Cloned Snowflake DB tables listing all events.
+
+      - name: inventory_items
+        description: Cloned Snowflake DB tables listing all the inventory items.
+
+      - name: order_items
+        description: Cloned Snowflake DB tables listing all order items in an order.
+
+      - name: orders
+        description: Cloned Snowflake DB tables listing all orders.
+
+      - name: products
+        description: Cloned Snowflake DB tables listing all products.
+
+      - name: users
+        description: Cloned Snowflake DB tables listing all users.
