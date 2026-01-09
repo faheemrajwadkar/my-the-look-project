@@ -11,7 +11,7 @@ the_look_database:  # Profile name (matches dbt_project.yml)
       role: ACCOUNTADMIN
       # Authentication (adapter-specific)
       auth_method: username_password  
-      username: FAHEEMRAJWADKAR
-      password_credentials: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
+      user: FAHEEMRAJWADKAR
+      password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
       # Execution settings (common across adapters)
       threads: 4   # Number of parallel threads
