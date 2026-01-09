@@ -7,10 +7,22 @@ renamed as (
         product_id,
         inventory_item_id,
         status as order_item_status,
-        created_at as order_item_created_at,
-        shipped_at as order_item_shipped_at,
-        delivered_at as order_item_delivered_at,
-        returned_at as order_item_returned_at,
+        COALESCE(
+            TRY_TO_TIMESTAMP_NTZ(created_at, 'YYYY-MM-DD HH:MI:SS UTC'),
+            TRY_TO_TIMESTAMP_NTZ(created_at, 'YYYY-MM-DD HH:MI:SS.FF UTC')
+        ) as order_item_created_at,
+        COALESCE(
+            TRY_TO_TIMESTAMP_NTZ(shipped_at, 'YYYY-MM-DD HH:MI:SS UTC'),
+            TRY_TO_TIMESTAMP_NTZ(shipped_at, 'YYYY-MM-DD HH:MI:SS.FF UTC')
+        ) as order_item_shipped_at,
+        COALESCE(
+            TRY_TO_TIMESTAMP_NTZ(delivered_at, 'YYYY-MM-DD HH:MI:SS UTC'),
+            TRY_TO_TIMESTAMP_NTZ(delivered_at, 'YYYY-MM-DD HH:MI:SS.FF UTC')
+        ) as order_item_delivered_at,
+        COALESCE(
+            TRY_TO_TIMESTAMP_NTZ(returned_at, 'YYYY-MM-DD HH:MI:SS UTC'),
+            TRY_TO_TIMESTAMP_NTZ(returned_at, 'YYYY-MM-DD HH:MI:SS.FF UTC')
+        ) as order_item_returned_at,
         sale_price as order_item_sale_price,
         _batched_at,
         _file_source

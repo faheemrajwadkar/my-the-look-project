@@ -8,7 +8,10 @@ renamed as (
         user_id,
         sequence_number,
         session_id,
-        created_at as event_created_at,
+        COALESCE(
+            TRY_TO_TIMESTAMP_NTZ(created_at, 'YYYY-MM-DD HH:MI:SS UTC'),
+            TRY_TO_TIMESTAMP_NTZ(created_at, 'YYYY-MM-DD HH:MI:SS.FF UTC')
+        ) as event_created_at,
         ip_address as event_ip_address,
         city,
         state,
