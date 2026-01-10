@@ -470,7 +470,7 @@ models:
           - not_null
 
       - name: user_traffic_source
-        description: "{{ docs('user_traffic_source_description') }}"
+        description: "{{ doc('user_traffic_source_description') }}"
         data_tests:
           - not_null
           - accepted_values:
