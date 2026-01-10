@@ -18,9 +18,9 @@ sources:
             warn_after:
               count: 12
               period: hour
-            # error_after:
-            #   count: 24
-            #   period: hour
+            error_after:
+              count: 24
+              period: hour
 
       - name: events
         description: Cloned Snowflake DB tables listing all events.
@@ -38,9 +38,9 @@ sources:
             warn_after:
               count: 12
               period: hour
-            # error_after:
-            #   count: 24
-            #   period: hour
+            error_after:
+              count: 24
+              period: hour
 
       - name: inventory_items
         description: Cloned Snowflake DB tables listing all the inventory items.
@@ -58,9 +58,9 @@ sources:
             warn_after:
               count: 12
               period: hour 
-            # error_after:
-            #   count: 24
-            #   period: hour
+            error_after:
+              count: 24
+              period: hour
 
       - name: order_items
         description: Cloned Snowflake DB tables listing all order items in an order.
@@ -75,9 +75,9 @@ sources:
             warn_after:
               count: 12
               period: hour
-            # error_after:
-            #   count: 24
-            #   period: hour
+            error_after:
+              count: 24
+              period: hour
 
       - name: orders
         description: Cloned Snowflake DB tables listing all orders.
@@ -92,9 +92,9 @@ sources:
             warn_after:
               count: 12
               period: hour
-            # error_after:
-            #   count: 24
-            #   period: hour
+            error_after:
+              count: 24
+              period: hour
 
       - name: products
         description: Cloned Snowflake DB tables listing all products.
@@ -109,9 +109,9 @@ sources:
             warn_after:
               count: 12
               period: hour
-            # error_after:
-            #   count: 24
-            #   period: hour
+            error_after:
+              count: 24
+              period: hour
 
       - name: users
         description: Cloned Snowflake DB tables listing all users.
@@ -126,6 +126,6 @@ sources:
             warn_after:
               count: 12
               period: hour
-            # error_after:
-            #   count: 24
-            #   period: hour
+            error_after:
+              count: 24
+              period: hour
