@@ -1,0 +1,7 @@
+version: 2
+
+models:
+  - name: stg_distribution_centers
+    description: Table containing list of distribution centers, along with their location details.
+    # columns:
+    #   - name: 
