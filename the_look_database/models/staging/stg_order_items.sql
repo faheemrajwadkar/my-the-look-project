@@ -4,6 +4,7 @@ with source as (
 
 renamed as (
     select 
+        id as order_item_id,
         product_id,
         inventory_item_id,
         status as order_item_status,
