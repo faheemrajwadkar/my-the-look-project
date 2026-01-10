@@ -86,7 +86,7 @@ models:
         description: "Browser the user used during the event."
 
       - name: traffic_source
-        description: "Source of event (channel)."
+        description: "{{ doc('traffic_source_description') }}"
         data_tests:
           - accepted_values:
               arguments:
@@ -101,7 +101,7 @@ models:
         description: "URI string for event type."
 
       - name: event_type
-        description: "Type of event that took place."
+        description: "{{ doc('event_type_description') }}"
         data_tests:
           - accepted_values:
               arguments:
@@ -231,7 +231,7 @@ models:
                 to: ref('stg_inventory_items')
 
       - name: order_item_status
-        description: "The current state of the order (e.g., Shipped, Processing, Returned, Cancelled)."
+        description: "{{ doc('order_item_status') }}"
         data_tests:
           - not_null
           - accepted_values:
@@ -293,7 +293,7 @@ models:
                 to: ref('stg_users')
 
       - name: order_status
-        description: "The current lifecycle stage of the entire order (e.g., Completed, Cancelled, Shipped)."
+        description: "{{ doc('order_item_status') }}"
         data_tests:
           - not_null
           - accepted_values:
@@ -470,7 +470,7 @@ models:
           - not_null
 
       - name: user_traffic_source
-        description: "The marketing channel or source (e.g., Organic, Search, Email) through which the user signed up."
+        description: "{{ docs('user_traffic_source_description') }}"
         data_tests:
           - not_null
           - accepted_values:
