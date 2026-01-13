@@ -1,0 +1,503 @@
+version: 2
+
+models:
+  - name: stg_the_look__distribution_centers
+    description: "Table containing list of distribution centers, along with their location details."
+    columns:
+      - name: distribution_center_id
+        description: "The unique primary key for each distribution center."
+        data_tests:
+          - unique
+          - not_null
+          
+      - name: distribution_center_name
+        description: "Name of the distribution center."
+        data_tests:
+          - not_null
+
+      - name: distribution_center_location_latitude
+        description: "Latitude value for location of the distribution center."
+        data_tests:
+          - not_null
+
+      - name: distribution_center_location_longitude
+        description: "Longitude value for location of the distribution center."
+        data_tests:
+          - not_null
+
+      - name: distribution_center_geom
+        description: "A geographic data type, represneting location of distribution center using Longitude and Latitude. "
+        data_tests:
+          - not_null
+
+      - name: _batched_at
+        description: "Timestamp indicating when the table was last refreshed in Snowflake."
+        data_tests:
+          - not_null
+
+      - name: _file_source
+        description: "Name of the file containing the row/record."
+        data_tests:
+          - not_null
+      
+
+
+  - name: stg_the_look__events
+    description: "Table containing list of events (business transactions) along with details like ip_address, location and channel."
+    columns:
+      - name: event_id
+        description: "The unique primary key for each event."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: user_id
+        description: "Foreign Key to stg_the_look__users."
+        data_tests:
+          - relationships:
+              arguments:
+                field: user_id
+                to: ref('stg_the_look__users')
+
+      - name: sequence_number
+        description: "Sequence number in a single session."
+
+      - name: session_id
+        description: "Session ID (hashed)."
+
+      - name: event_created_at
+        description: "Timestamp when the event was created."
+        data_tests:
+          - not_null
+
+      - name: event_ip_address
+        description: "IP Address associated with user device who was responsible for the event."
+
+      - name: city
+        description: "City in which the event originated (could be inaccurate if VPN was used)."
+
+      - name: state
+        description: "State in which the event originated (could be inaccurate if VPN was used)."
+
+      - name: postal_code
+        description: "Postal Code in which the event originated (could be inaccurate if VPN was used)."
+
+      - name: browser
+        description: "Browser the user used during the event."
+
+      - name: traffic_source
+        description: "{{ doc('traffic_source_description') }}"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Email'
+                  - 'Adwords'
+                  - 'Organic'
+                  - 'Facebook'
+                  - 'YouTube'
+
+      - name: event_uri
+        description: "URI string for event type."
+
+      - name: event_type
+        description: "{{ doc('event_type_description') }}"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - 'purchase'
+                  - 'cart'
+                  - 'department'
+                  - 'product'
+                  - 'home'
+                  - 'cancel'
+
+      - name: _batched_at
+        description: "Timestamp indicating when the table was last refreshed in Snowflake."
+        data_tests:
+          - not_null
+
+      - name: _file_source
+        description: "Name of the file containing the row/record."
+        data_tests:
+          - not_null
+
+
+
+  - name: stg_the_look__inventory_items
+    description: "Staged inventory data tracking individual stock units, their lifecycle (created vs. sold), and associated product details."
+    columns:
+      - name: inventory_item_id
+        description: "The unique primary key for an individual stock unit in the warehouse."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: product_id
+        description: "The foreign key linking this item to the master product catalog."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                field: product_id
+                to: ref('stg_the_look__products')
+
+      - name: inventory_item_created_at
+        description: "The timestamp when this specific unit was first added to the inventory."
+        data_tests:
+          - not_null
+
+      - name: inventory_item_sold_at
+        description: "The timestamp when this specific unit was sold; null if still in stock."
+
+      - name: inventory_item_cost
+        description: "The wholesale cost to acquire this specific item."
+        data_tests:
+          - not_null
+
+      - name: product_category
+        description: "The broad category classification for the product (e.g., Accessories, Jeans)."
+        data_tests:
+          - not_null
+
+      - name: product_name
+        description: "The full commercial name of the product."
+        data_tests:
+          - not_null
+
+      - name: product_brand
+        description: "The brand name associated with the product."
+        data_tests:
+          - not_null
+
+      - name: product_retail_price
+        description: "The suggested or current price for the product at retail."
+        data_tests:
+          - not_null
+
+      - name: product_department
+        description: "The department classification (e.g., Men, Women) the product belongs to."
+        data_tests:
+          - not_null
+
+      - name: product_sku
+        description: "The Stock Keeping Unit code used for inventory tracking."
+        data_tests:
+          - not_null
+
+      - name: product_distribution_center_id
+        description: "The ID of the warehouse or distribution center where this item is located."
+        data_tests:
+          - not_null
+
+      - name: _batched_at
+        description: "The timestamp when this record was loaded into the data warehouse."
+        data_tests:
+          - not_null
+
+      - name: _file_source
+        description: "The name or path of the raw source file for this record."
+        data_tests:
+          - not_null
+
+
+
+  - name: stg_the_look__order_items
+    description: "Staged order line items tracking the transaction status and shipping lifecycle of individual units sold."
+    columns:
+      - name: order_item_id
+        description: "The unique primary key for the order line item."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: product_id
+        description: "The foreign key identifying the product purchased."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                field: product_id
+                to: ref('stg_the_look__products')
+
+      - name: inventory_item_id
+        description: "The foreign key identifying the specific unit from inventory assigned to this order."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                field: inventory_item_id
+                to: ref('stg_the_look__inventory_items')
+
+      - name: order_item_status
+        description: "{{ doc('order_item_status') }}"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Returned'
+                  - 'Processing'
+                  - 'Cancelled'
+                  - 'Shipped'
+                  - 'Complete'
+
+      - name: order_item_created_at
+        description: "The timestamp when the order was placed by the customer."
+        data_tests:
+          - not_null
+
+      - name: order_item_shipped_at
+        description: "The timestamp when the item left the distribution center."
+
+      - name: order_item_delivered_at
+        description: "The timestamp when the item was confirmed as delivered to the customer."
+
+      - name: order_item_returned_at
+        description: "The timestamp when a return was processed for this item; null if no return occurred."
+
+      - name: order_item_sale_price
+        description: "The actual price paid by the customer for this item, including any discounts."
+        data_tests:
+          - not_null
+
+      - name: _batched_at
+        description: "The timestamp when this record was loaded into the data warehouse."
+        data_tests:
+          - not_null
+
+      - name: _file_source
+        description: "The name or path of the raw source file for this record."
+        data_tests:
+          - not_null
+
+
+
+  - name: stg_the_look__orders
+    description: "Staged order header records providing a consolidated view of customer transactions and fulfillment timelines."
+    columns:
+      - name: order_id
+        description: "The unique primary key for the order."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: user_id
+        description: "The foreign key of the customer who placed the order."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                field: user_id
+                to: ref('stg_the_look__users')
+
+      - name: order_status
+        description: "{{ doc('order_item_status') }}"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Returned'
+                  - 'Processing'
+                  - 'Cancelled'
+                  - 'Shipped'
+                  - 'Complete'
+
+      - name: user_gender
+        description: "The gender of the user associated with the order (often included for quick demographic filtering)."
+        data_tests:
+          - not_null
+
+      - name: order_created_at
+        description: "The timestamp when the order was successfully submitted."
+        data_tests:
+          - not_null
+
+      - name: order_shipped_at
+        description: "The timestamp when the first item in the order was shipped."
+
+      - name: order_delivered_at
+        description: "The timestamp when the entire order was marked as delivered to the customer."
+
+      - name: order_returned_at
+        description: "The timestamp when a return was initiated for any part of this order."
+
+      - name: order_num_of_item
+        description: "The total count of individual items included in this order."
+        data_tests:
+          - not_null
+
+      - name: _batched_at
+        description: "The timestamp when this record was loaded into the data warehouse."
+        data_tests:
+          - not_null
+
+      - name: _file_source
+        description: "The name or path of the raw source file for this record."
+        data_tests:
+          - not_null
+
+
+
+  - name: stg_the_look__products
+    description: "Staged product catalog containing pricing, branding, and categorization for all items offered in the store."
+    columns:
+      - name: product_id
+        description: "The unique primary key for each product in the catalog."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: product_cost
+        description: "The wholesale acquisition cost paid by the company for the product."
+        data_tests:
+          - not_null
+
+      - name: product_category
+        description: "The specific category classification (e.g., Swim, Outerwear, Sleep & Lounge)."
+        data_tests:
+          - not_null
+
+      - name: product_name
+        description: "The consumer-facing name of the product."
+
+      - name: product_brand
+        description: "The manufacturer or brand name of the product."
+
+      - name: product_retail_price
+        description: "The manufacturer's suggested retail price (MSRP) or the listed price for consumers."
+        data_tests:
+          - not_null
+
+      - name: product_department
+        description: "The broad department category, typically divided into Men and Women."
+        data_tests:
+          - not_null
+
+      - name: product_sku
+        description: "The Stock Keeping Unit; a unique alphanumeric identifier for the product."
+        data_tests:
+          - not_null
+
+      - name: distribution_center_id
+        description: "The foreign key identifying the primary distribution center where this product is stocked."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                field: distribution_center_id
+                to: ref('stg_the_look__distribution_centers')
+
+      - name: _batched_at
+        description: "The timestamp when this record was loaded into the data warehouse."
+        data_tests:
+          - not_null
+
+      - name: _file_source
+        description: "The name or path of the raw source file for this record."
+        data_tests:
+          - not_null
+
+
+
+  - name: stg_the_look__users
+    description: "Staged user data containing profile information, geographic location, and acquisition source."
+    columns:
+      - name: user_id
+        description: "The unique primary key for each user."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: user_first_name
+        description: "The first name of the user."
+        data_tests:
+          - not_null
+
+      - name: user_last_name
+        description: "The last name or family name of the user."
+
+      - name: user_email
+        description: "The user's registered email address."
+        data_tests:
+          - not_null
+
+      - name: user_age
+        description: "The age of the user at the time of account creation."
+        data_tests:
+          - not_null
+
+      - name: user_gender
+        description: "The self-identified gender of the user."
+        data_tests:
+          - not_null
+
+      - name: user_state
+        description: "The state or province of the user's primary residence."
+        data_tests:
+          - not_null
+
+      - name: user_street_address
+        description: "The full street address for the user."
+        data_tests:
+          - not_null
+
+      - name: user_postal_code
+        description: "The zip code or postal code of the user's residence."
+        data_tests:
+          - not_null
+
+      - name: user_city
+        description: "The city where the user is located."
+        data_tests:
+          - not_null
+
+      - name: user_country
+        description: "The country of the user's primary residence."
+        data_tests:
+          - not_null
+
+      - name: user_latitude
+        description: "The latitude coordinate of the user's address."
+        data_tests:
+          - not_null
+
+      - name: user_longitude
+        description: "The longitude coordinate of the user's address."
+        data_tests:
+          - not_null
+
+      - name: user_traffic_source
+        description: "{{ doc('user_traffic_source_description') }}"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Facebook'
+                  - 'Search'
+                  - 'Organic'
+                  - 'Display'
+                  - 'Email'
+
+      - name: user_created_at
+        description: "The timestamp when the user account was first created."
+        data_tests:
+          - not_null
+
+      - name: user_geom
+        description: "The PostGIS or geospatial geometry object representing the user's location."
+        data_tests:
+          - not_null
+
+      - name: _batched_at
+        description: "The timestamp when this record was loaded into the data warehouse by the ETL/ELT process."
+        data_tests:
+          - not_null
+
+      - name: _file_source
+        description: "The name or path of the raw source file from which this data was extracted."
+        data_tests:
+          - not_null

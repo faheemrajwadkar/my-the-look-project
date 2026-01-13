@@ -1,0 +1,17 @@
+the_look_database:  # Profile name (matches dbt_project.yml)
+  target: dev  # Default target to use
+  outputs:
+    dev: # Development environment
+      type: snowflake # Required: snowflake, bigquery, databricks, redshift, postgres, etc
+      # Connection identifiers (placeholder examples, see adapter-specific pages for supported configs)
+      account: TCPYTEC-AM02387
+      warehouse: TRANSFORMER
+      database: ANALYTICS
+      schema: DBT_FRAJWADKAR
+      role: ACCOUNTADMIN
+      # Authentication (adapter-specific)
+      auth_method: username_password  
+      user: FAHEEMRAJWADKAR
+      password: "{{ env_var('DBT_SNOWFLAKE_PASSWORD') }}"
+      # Execution settings (common across adapters)
+      threads: 4   # Number of parallel threads
