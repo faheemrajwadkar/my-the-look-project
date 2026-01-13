@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: stg_distribution_centers
+  - name: stg_the_look__distribution_centers
     description: "Table containing list of distribution centers, along with their location details."
     columns:
       - name: distribution_center_id
@@ -42,7 +42,7 @@ models:
       
 
 
-  - name: stg_events
+  - name: stg_the_look__events
     description: "Table containing list of events (business transactions) along with details like ip_address, location and channel."
     columns:
       - name: event_id
@@ -52,12 +52,12 @@ models:
           - unique
 
       - name: user_id
-        description: "Foreign Key to stg_users."
+        description: "Foreign Key to stg_the_look__users."
         data_tests:
           - relationships:
               arguments:
                 field: user_id
-                to: ref('stg_users')
+                to: ref('stg_the_look__users')
 
       - name: sequence_number
         description: "Sequence number in a single session."
@@ -125,7 +125,7 @@ models:
 
 
 
-  - name: stg_inventory_items
+  - name: stg_the_look__inventory_items
     description: "Staged inventory data tracking individual stock units, their lifecycle (created vs. sold), and associated product details."
     columns:
       - name: inventory_item_id
@@ -141,7 +141,7 @@ models:
           - relationships:
               arguments:
                 field: product_id
-                to: ref('stg_products')
+                to: ref('stg_the_look__products')
 
       - name: inventory_item_created_at
         description: "The timestamp when this specific unit was first added to the inventory."
@@ -203,7 +203,7 @@ models:
 
 
 
-  - name: stg_order_items
+  - name: stg_the_look__order_items
     description: "Staged order line items tracking the transaction status and shipping lifecycle of individual units sold."
     columns:
       - name: order_item_id
@@ -219,7 +219,7 @@ models:
           - relationships:
               arguments:
                 field: product_id
-                to: ref('stg_products')
+                to: ref('stg_the_look__products')
 
       - name: inventory_item_id
         description: "The foreign key identifying the specific unit from inventory assigned to this order."
@@ -228,7 +228,7 @@ models:
           - relationships:
               arguments:
                 field: inventory_item_id
-                to: ref('stg_inventory_items')
+                to: ref('stg_the_look__inventory_items')
 
       - name: order_item_status
         description: "{{ doc('order_item_status') }}"
@@ -274,7 +274,7 @@ models:
 
 
 
-  - name: stg_orders
+  - name: stg_the_look__orders
     description: "Staged order header records providing a consolidated view of customer transactions and fulfillment timelines."
     columns:
       - name: order_id
@@ -290,7 +290,7 @@ models:
           - relationships:
               arguments:
                 field: user_id
-                to: ref('stg_users')
+                to: ref('stg_the_look__users')
 
       - name: order_status
         description: "{{ doc('order_item_status') }}"
@@ -341,7 +341,7 @@ models:
 
 
 
-  - name: stg_products
+  - name: stg_the_look__products
     description: "Staged product catalog containing pricing, branding, and categorization for all items offered in the store."
     columns:
       - name: product_id
@@ -388,7 +388,7 @@ models:
           - relationships:
               arguments:
                 field: distribution_center_id
-                to: ref('stg_distribution_centers')
+                to: ref('stg_the_look__distribution_centers')
 
       - name: _batched_at
         description: "The timestamp when this record was loaded into the data warehouse."
@@ -402,7 +402,7 @@ models:
 
 
 
-  - name: stg_users
+  - name: stg_the_look__users
     description: "Staged user data containing profile information, geographic location, and acquisition source."
     columns:
       - name: user_id
