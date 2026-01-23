@@ -1,0 +1,31 @@
+select 
+    u.user_id,
+    u.user_first_name,
+    u.user_last_name,
+    u.user_email,
+    u.user_age,
+    u.user_gender,
+    u.user_state,
+    u.user_street_address,
+    u.user_postal_code,
+    u.user_city,
+    u.user_country,
+    u.user_traffic_source,
+    u.user_longitude,
+    u.user_latitude,
+    u.user_created_at,
+    o.completed_orders,
+    o.last_order_completed_at,
+    o.returned_orders,
+    o.last_order_returned_at,
+    o.cancelled_orders,
+    o.last_order_cancelled_at,
+    o.total_orders,
+    o.first_order_at,
+    o.last_order_at,
+    o.user_ltv,
+    o.user_items_purchased,
+    o.is_active_customer
+from {{ ref("stg_the_look__users") }} u
+left join {{ ref("inter_user_orders") }} o 
+    on u.user_id = o.user_id
