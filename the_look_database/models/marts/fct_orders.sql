@@ -17,7 +17,7 @@ with order_details_pre as (
         order_returned_at,
         datediff('minute', order_delivered_at, order_returned_at) as time_to_return_mins,
         order_num_of_item as items_ordered
-    from {{ ref("stg_the_look__products") }}
+    from {{ ref("stg_the_look__orders") }}
 ),
 
 order_details as (
@@ -26,7 +26,7 @@ order_details as (
         user_id,
         user_order_number_asc,
         case when user_order_number_asc = 1 then 1 else 0 end as is_first_order,
-        user_order_number_desc
+        user_order_number_desc,
         case when user_order_number_desc = 1 then 1 else 0 end as is_most_recent_order,
         user_previous_order_created_at,
         datediff('day', user_previous_order_created_at, order_created_at) as days_since_prior_order,
@@ -57,7 +57,8 @@ order_metrics as (
     from {{ ref("stg_the_look__order_items") }} oi
     left join {{ ref("stg_the_look__inventory_items") }} ii 
         on oi.inventory_item_id = ii.inventory_item_id
-    group by 1
+    group by 
+        oi.order_id
 )
 
 select 
@@ -65,7 +66,7 @@ select
     od.user_id,
     od.user_order_number_asc,
     od.is_first_order,
-    od.user_order_number_desc
+    od.user_order_number_desc,
     od.is_most_recent_order,
     od.user_previous_order_created_at,
     od.days_since_prior_order,
