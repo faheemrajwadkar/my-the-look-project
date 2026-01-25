@@ -1,5 +1,6 @@
 select 
     date_day as date,
+    {{ dbt_utils.generate_surrogate_key(["date_day"]) }} as date_day_sk,
     dayname(date_day) as day_name,
     monthname(date_day) as month_name,
     date_trunc('year', date_day) as year,

@@ -40,6 +40,7 @@ sales_metrics as (
 
 select 
     d.distribution_center_id,
+    {{ dbt_utils.generate_surrogate_key(["d.distribution_center_id"]) }} as distribution_center_sk,
     d.distribution_center_name,
     d.distribution_center_location_latitude,
     d.distribution_center_location_longitude,

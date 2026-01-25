@@ -1,5 +1,6 @@
 select 
     u.user_id,
+    {{ dbt_utils.generate_surrogate_key(["u.user_id"]) }} as user_sk,
     u.user_first_name,
     u.user_last_name,
     u.user_email,

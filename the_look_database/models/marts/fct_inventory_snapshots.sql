@@ -8,12 +8,14 @@ with products as (
         on p.product_id = pad.product_id
     where pad.product_first_added_at is not null
 ),
+
 dates as (
     select 
         date as dt
     from {{ ref("inter_dates") }}
     where date <= current_date
 ),
+
 date_products as (
     select 
         d.dt,
@@ -23,6 +25,7 @@ date_products as (
     cross join products as p 
     where d.dt >= p.product_first_added_at
 ),
+
 inventory_added as (
     select 
         date(inventory_item_created_at) as dt,
@@ -38,6 +41,7 @@ inventory_added as (
         product_id,
         distribution_center_id
 ),
+
 inventory_sold as (
     select 
         date(oi.order_item_created_at) as dt,
@@ -54,6 +58,7 @@ inventory_sold as (
         oi.product_id,
         p.distribution_center_id
 ),
+
 returned_items as (
     select 
         date(oi.order_item_returned_at) as dt,
@@ -70,6 +75,7 @@ returned_items as (
         oi.product_id,
         p.distribution_center_id
 ),
+
 day_level_counts as (
     select 
         dp.dt,
@@ -94,6 +100,7 @@ day_level_counts as (
         and dp.product_id = rt.product_id
         and dp.distribution_center_id = rt.distribution_center_id
 ),
+
 cumulative as (
     select 
         dt,
@@ -112,6 +119,7 @@ cumulative as (
         sum(value_added) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as value_added_till_date
     from day_level_counts
 ),
+
 main as (
     select 
         dt,
@@ -145,11 +153,14 @@ main as (
         ) as total_inventory_value_at_close
     from cumulative
 ),
+
 final as (
     select 
         dt,
         product_id,
+        {{ dbt_utils.generate_surrogate_key(["product_id"]) }} as product_sk,
         distribution_center_id,
+        {{ dbt_utils.generate_surrogate_key(["distribution_center_id"]) }} as distribution_center_sk,
         
         coalesce(total_inventory_in_stock_at_open, 0) as total_inventory_in_stock_at_open,
         coalesce(total_inventory_in_stock_at_close, 0) as total_inventory_in_stock_at_close,
@@ -169,4 +180,5 @@ final as (
         case when coalesce(total_inventory_in_stock_at_open, 0) < 5 then 1 else 0 end as is_low_stock
     from main 
 )
+
 select * from final

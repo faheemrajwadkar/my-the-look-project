@@ -63,7 +63,9 @@ order_metrics as (
 
 select 
     od.order_id,
+    {{ dbt_utils.generate_surrogate_key(["od.order_id"]) }} as order_sk,
     od.user_id,
+    {{ dbt_utils.generate_surrogate_key(["od.user_id"]) }} as user_sk,
     od.user_order_number_asc,
     od.is_first_order,
     od.user_order_number_desc,

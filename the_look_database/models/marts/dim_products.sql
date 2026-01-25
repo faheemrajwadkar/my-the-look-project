@@ -46,6 +46,7 @@ sales_metrics as (
 
 select 
     p.product_id,
+    {{ dbt_utils.generate_surrogate_key(["p.product_id"]) }} as product_sk,
     p.product_cost,
     p.product_category,
     p.product_name,
