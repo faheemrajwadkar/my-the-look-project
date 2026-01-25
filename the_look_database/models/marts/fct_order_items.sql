@@ -4,7 +4,7 @@ select
     oi.user_id,
     oi.product_id,
     oi.inventory_item_id,
-    ii.product_distribution_center_id,
+    ii.distribution_center_id,
     oi.order_item_status,
     oi.order_item_created_at,
     oi.order_item_shipped_at,
