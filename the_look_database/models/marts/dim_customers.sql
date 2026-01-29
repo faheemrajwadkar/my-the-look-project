@@ -15,18 +15,18 @@ select
     u.user_longitude,
     u.user_latitude,
     u.user_created_at,
-    o.completed_orders,
+    coalesce(o.completed_orders, 0) as completed_orders,
     o.last_order_completed_at,
-    o.returned_orders,
+    coalesce(o.returned_orders, 0) as returned_orders,
     o.last_order_returned_at,
-    o.cancelled_orders,
+    coalesce(o.cancelled_orders, 0) as cancelled_orders,
     o.last_order_cancelled_at,
-    o.total_orders,
+    coalesce(o.total_orders, 0) as total_orders,
     o.first_order_at,
     o.last_order_at,
-    o.user_ltv,
-    o.user_items_purchased,
-    o.is_active_customer
+    coalesce(o.user_ltv, 0) as user_ltv,
+    coalesce(o.user_items_purchased, 0) as user_items_purchased,
+    coalesce(o.is_active_customer, FALSE) as is_active_customer
 from {{ ref("stg_the_look__users") }} u
 left join {{ ref("inter_user_orders") }} o 
     on u.user_id = o.user_id

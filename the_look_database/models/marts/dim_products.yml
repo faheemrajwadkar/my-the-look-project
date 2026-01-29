@@ -1,0 +1,187 @@
+version: 2
+
+models:
+  - name: dim_products
+    description: "A comprehensive product dimension table. It serves as the primary source for product metadata and provides pre-aggregated performance indicators, enabling deep-dive analysis into product margins, popularity, and supply chain efficiency."
+    columns:
+      - name: product_id
+        description: "The natural primary key for the product from the source system."
+        data_tests:
+          - unique
+          - not_null
+        
+      - name: product_sk
+        description: "The unique surrogate key (hash) generated for the data warehouse."
+        data_tests:
+          - unique
+          - not_null
+        
+      - name: product_cost
+        description: "The unit cost of the product at the time of procurement."
+        data_tests:
+          - not_null
+        
+      - name: product_category
+        description: "The broad classification of the product (e.g., 'Accessories', 'Active')."
+        data_tests:
+          - not_null
+        
+      - name: product_name
+        description: "The full descriptive name of the product."
+        
+      - name: product_brand
+        description: "The brand or manufacturer name associated with the product."
+        
+      - name: product_retail_price
+        description: "The standard manufacturer's suggested retail price (MSRP)."
+        data_tests:
+          - not_null
+        
+      - name: product_department
+        description: "The top-level business department (e.g., 'Men', 'Women')."
+        data_tests:
+          - not_null
+        
+      - name: product_sku
+        description: "The Stock Keeping Unit identifier used for inventory management."
+        data_tests:
+          - not_null
+        
+      - name: distribution_center_name
+        description: "The name of the primary distribution center where this product is stocked."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                field: distribution_center_name
+                to: ref('stg_the_look__distribution_centers')
+        
+      - name: products_procured
+        description: "Total quantity of this specific product ever received into inventory."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+          - aggregates_match:
+              arguments:
+                main_function: sum
+                source_model: ref('stg_the_look__inventory_items')
+                source_column_name: inventory_item_id
+                source_function: count
+        
+      - name: products_ordered
+        description: "Total quantity of this product included in customer orders (all statuses)."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+          - aggregates_match:
+              arguments:
+                main_function: sum
+                source_model: ref('stg_the_look__order_items')
+                source_column_name: order_item_id
+                source_function: count
+        
+      - name: product_first_added_at
+        description: "The timestamp when this product was first entered into the system."
+        data_tests:
+          - last_acton_at_not_null:
+              arguments:
+                count_column: products_procured
+        
+      - name: product_last_added_at
+        description: "The timestamp of the most recent inventory update for this product."
+        data_tests:
+          - last_acton_at_not_null:
+              arguments:
+                count_column: products_procured
+        
+      - name: product_first_ordered_at
+        description: "The timestamp of the first time a customer ordered this product."
+        data_tests:
+          - last_acton_at_not_null:
+              arguments:
+                count_column: products_ordered
+        
+      - name: product_last_ordered_at
+        description: "The timestamp of the most recent customer order for this product."
+        data_tests:
+          - last_acton_at_not_null:
+              arguments:
+                count_column: products_ordered
+        
+      - name: total_product_procurement_cost
+        description: "The cumulative historical cost of procuring all units of this product."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+          - aggregates_match:
+              arguments:
+                main_function: sum
+                source_model: ref('stg_the_look__inventory_items')
+                source_column_name: inventory_item_cost
+                source_function: sum
+        
+      - name: products_sold_successfully
+        description: "Total quantity of this product sold in 'Complete' orders."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: product_last_sold_successfully_at
+        description: "The timestamp of the most recent successful sale of this product."
+        data_tests:
+          - last_acton_at_not_null:
+              arguments:
+                count_column: products_sold_successfully
+        
+      - name: products_returned
+        description: "Total quantity of this product returned by customers."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: product_last_returned_at
+        description: "The timestamp of the most recent return for this product."
+        data_tests:
+          - last_acton_at_not_null:
+              arguments:
+                count_column: products_returned
+        
+      - name: products_cancelled
+        description: "Total quantity of this product in orders that were cancelled."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: product_last_cancelled_at
+        description: "The timestamp of the most recent cancellation involving this product."
+        data_tests:
+          - last_acton_at_not_null:
+              arguments:
+                count_column: products_cancelled
+        
+      - name: total_product_revenue
+        description: "The total gross revenue generated by sales of this product."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+        
+
+        
+
+
+      

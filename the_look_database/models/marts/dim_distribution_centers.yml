@@ -1,0 +1,150 @@
+version: 2
+
+models:
+  - name: dim_distribution_centers
+    description: "A dimension table representing physical warehouse locations. It includes spatial data for mapping and high-level aggregation of procurement, sales, and logistical performance per center."
+    columns:
+      - name: distribution_center_id
+        description: ""
+        data_tests:
+          - unique
+          - not_null
+
+
+      - name: distribution_center_sk
+        description: ""
+        data_tests:
+          - unique
+          - not_null
+
+
+      - name: distribution_center_name
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: distribution_center_location_latitude
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: distribution_center_location_longitude
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: distribution_center_geom
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: products_procured
+        description: ""
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+
+      - name: products_ordered
+        description: ""
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+
+      - name: product_first_added_at
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: product_last_added_at
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: product_first_ordered_at
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: product_last_ordered_at
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: total_product_procurement_cost
+        description: ""
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+
+      - name: products_sold_successfully
+        description: ""
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+
+      - name: product_last_sold_successfully_at
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: products_returned
+        description: ""
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+
+      - name: product_last_returned_at
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: products_cancelled
+        description: ""
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+
+      - name: product_last_cancelled_at
+        description: ""
+        data_tests:
+          - not_null
+
+
+      - name: total_product_revenue
+        description: ""
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+
+      
