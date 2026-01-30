@@ -1,0 +1,176 @@
+version: 2
+
+models:
+  - name: fct_order_items
+    description: "The most granular order related fact table in the warehouse. Each row represents a single item within an order. This table is essential for analyzing product-level profitability, shipping performance by item, and detailed inventory attribution."
+    columns:
+      - name: order_item_id
+        description: "The natural primary key for the specific line item from the source system."
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__order_items')
+                field: order_item_id
+          - aggregates_match:
+              arguments:
+                main_function: count
+                source_model: ref('stg_the_look__order_items')
+                source_column_name: order_item_id
+                source_function: count
+        
+      - name: order_item_sk
+        description: "The unique surrogate key (hash) for this specific order item record."
+        data_tests:
+          - unique
+          - not_null
+        
+      - name: order_id
+        description: "Foreign key connecting this item to its parent order."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__orders')
+                field: order_id
+        
+      - name: order_sk
+        description: "Surrogate foreign key connecting to fct_orders."
+        data_tests:
+          - not_null
+        
+      - name: user_id
+        description: "Foreign key identifying the customer who purchased this item."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__users')
+                field: user_id
+        
+      - name: user_sk
+        description: "Surrogate foreign key connecting to dim_customers."
+        data_tests:
+          - not_null
+        
+      - name: product_id
+        description: "Foreign key identifying the specific product purchased."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__products')
+                field: product_id
+        
+      - name: product_sk
+        description: "Surrogate foreign key connecting to dim_products."
+        data_tests:
+          - not_null
+        
+      - name: inventory_item_id
+        description: "Foreign key identifying the specific physical unit from inventory."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__inventory_items')
+                field: inventory_item_id
+        
+      - name: inventory_item_sk
+        description: "Surrogate foreign key connecting to a specific inventory record."
+        data_tests:
+          - not_null
+        
+      - name: distribution_center_id
+        description: "Foreign key identifying the warehouse that fulfilled this specific item."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__distribution_centers')
+                field: distribution_center_id
+        
+      - name: distribution_center_sk
+        description: "Surrogate foreign key connecting to dim_distribution_centers."
+        data_tests:
+          - not_null
+        
+      - name: order_item_status
+        description: "{{ doc('order_item_status_desc') }}"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Returned'
+                  - 'Processing'
+                  - 'Cancelled'
+                  - 'Shipped'
+                  - 'Complete'
+        
+      - name: order_item_created_at
+        description: "The UTC timestamp when this item was added to the order."
+        data_tests:
+          - not_null
+        
+      - name: order_item_shipped_at
+        description: "The UTC timestamp when this specific item left the warehouse."
+        
+      - name: time_to_ship_item_mins
+        description: "Minutes elapsed between item creation and shipping."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "order_item_shipped_at is not null"
+        
+      - name: order_item_delivered_at
+        description: "The UTC timestamp when this item reached the customer."
+        
+      - name: time_to_deliver_item_mins
+        description: "Minutes elapsed between shipping and delivery for this item."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "order_item_delivered_at is not null"
+        
+      - name: time_to_complete_order_item_mins
+        description: "Total minutes from creation to final delivery of this specific item."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "order_item_delivered_at is not null"
+        
+      - name: order_item_returned_at
+        description: "The UTC timestamp when this specific item was returned."
+        
+      - name: time_to_return_item_mins
+        description: "Minutes elapsed between delivery and the return event for this item."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "order_item_returned_at is not null"
+        
+      - name: order_item_sale_price
+        description: "The actual price paid by the customer for this item (after discounts)."
+        data_tests:
+          - not_null
+          - aggregates_match:
+              arguments:
+                main_function: sum
+                source_model: ref('fct_orders')
+                source_column_name: gross_revenue
+                source_function: sum
+        
+      - name: order_item_cost_price
+        description: "The procurement cost of this specific item unit."
+        data_tests:
+          - not_null
+          - aggregates_match:
+              arguments:
+                main_function: sum
+                source_model: ref('fct_orders')
+                source_column_name: items_cost
+                source_function: sum
+        
+        

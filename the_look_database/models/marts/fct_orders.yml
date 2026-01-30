@@ -1,0 +1,225 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: "The central fact table for the Look's e-commerce operations. Each row represents a unique order, aggregating line-item data into single-order metrics. It includes window-based calculations (like order sequence) to facilitate retention and cohort analysis."
+    columns:
+      - name: order_id
+        description: "The natural primary key for the order from the source system."
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__orders')
+                field: order_id
+          - aggregates_match:
+              arguments:
+                main_function: count
+                source_model: ref('stg_the_look__orders')
+                source_column_name: order_id
+                source_function: count
+        
+      - name: order_sk
+        description: "The unique surrogate key (hash) for the order in the data warehouse."
+        data_tests:
+          - not_null
+          - unique
+        
+      - name: user_id
+        description: "The natural foreign key connecting the order to a specific user."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__users')
+                field: user_id
+        
+      - name: user_sk
+        description: "The surrogate foreign key connecting to dim_customers."
+        data_tests:
+          - not_null
+        
+      - name: user_order_number_asc
+        description: "The sequential number of this order for the user (1 = first order, 2 = second, etc.)."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 1"
+        
+      - name: is_first_order
+        description: "Boolean flag: 1 if this is the customer's first ever purchase."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 0
+                  - 1
+        
+      - name: user_order_number_desc
+        description: "The reverse sequence (1 = most recent order)."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 1"
+        
+      - name: is_most_recent_order
+        description: "Boolean flag: 1 if this is the latest order placed by the user."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 0
+                  - 1
+        
+      - name: user_previous_order_created_at
+        description: "The timestamp of the user's immediately preceding order."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "user_order_number_asc > 1"
+        
+      - name: days_since_prior_order
+        description: "The number of days elapsed between the previous order and this one."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "user_order_number_asc > 1"
+        
+      - name: user_next_order_created_at
+        description: "The timestamp of the user's subsequent order (null if this is the latest)."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "user_order_number_desc > 1"
+        
+      - name: days_to_next_order
+        description: "The number of days until the user placed their next order."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "is_most_recent_order = 0"
+        
+      - name: order_status
+        description: "{{ doc('order_status_desc') }}"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Returned'
+                  - 'Processing'
+                  - 'Cancelled'
+                  - 'Shipped'
+                  - 'Complete'
+        
+      - name: user_gender
+        description: "The gender of the user at the time of the order."
+        data_tests:
+          - not_null
+        
+      - name: order_created_at
+        description: "The UTC timestamp when the order was placed."
+        data_tests:
+          - not_null
+        
+      - name: order_shipped_at
+        description: "The UTC timestamp when the order left the distribution center."
+        
+      - name: time_to_ship_mins
+        description: "Total minutes elapsed between order creation and shipping."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "order_shipped_at is not null"
+        
+      - name: order_delivered_at
+        description: "The UTC timestamp when the order was marked as delivered."
+        
+      - name: time_to_deliver_mins
+        description: "Total minutes elapsed between shipping and delivery."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "order_delivered_at is not null"
+        
+      - name: time_to_complete_order_mins
+        description: "Total minutes from order creation to final delivery."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "order_delivered_at is not null"
+        
+      - name: order_returned_at
+        description: "The UTC timestamp when a return was processed for this order."
+        
+      - name: time_to_return_mins
+        description: "Minutes elapsed between delivery and the return event."
+        data_tests:
+          - conditional_not_null:
+              arguments:
+                condition: "order_returned_at is not null"
+        
+      - name: items_ordered
+        description: "The total count of individual items included in the order."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 1"
+        
+      - name: items_sold
+        description: "The count of items from the order that reached 'Complete' status."
+        data_tests:
+          - not_null
+        
+      - name: items_returned
+        description: "The count of items from the order that were returned."
+        data_tests:
+          - not_null
+        
+      - name: items_cost
+        description: "The total procurement cost for all items in the order."
+        data_tests:
+          - not_null
+          - aggregates_match:
+              arguments:
+                main_function: sum
+                source_model: ref('fct_order_items')
+                source_column_name: order_item_cost_price
+                source_function: sum
+                
+        
+      - name: gross_revenue
+        description: "Total revenue from the order before returns or cancellations."
+        data_tests:
+          - not_null
+          - aggregates_match:
+              arguments:
+                main_function: sum
+                source_model: ref('fct_order_items')
+                source_column_name: order_item_sale_price
+                source_function: sum
+        
+      - name: net_revenue
+        description: "Gross Revenue minus Returns: The final realized revenue for the order."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "<= gross_revenue"
+        
+      - name: order_derived_status
+        description: "{{ doc('order_derived_status_desc') }}"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Successful'
+                  - 'Failed'
+        

@@ -308,7 +308,7 @@ models:
       - name: user_gender
         description: "The gender of the user associated with the order (often included for quick demographic filtering)."
         data_tests:
-          - not_null
+          - not_nullorder_item_status
 
       - name: order_created_at
         description: "The timestamp when the order was successfully submitted."

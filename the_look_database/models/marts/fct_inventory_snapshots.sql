@@ -157,10 +157,17 @@ main as (
 final as (
     select 
         dt,
+        {{ dbt_utils.generate_surrogate_key(["dt"]) }} as dt_sk,
         product_id,
         {{ dbt_utils.generate_surrogate_key(["product_id"]) }} as product_sk,
         distribution_center_id,
         {{ dbt_utils.generate_surrogate_key(["distribution_center_id"]) }} as distribution_center_sk,
+
+        {{ dbt_utils.generate_surrogate_key([
+            "dt", 
+            "product_id",
+            "distribution_center_id"
+        ])}} as inventory_snapshot_sk,
         
         coalesce(total_inventory_in_stock_at_open, 0) as total_inventory_in_stock_at_open,
         coalesce(total_inventory_in_stock_at_close, 0) as total_inventory_in_stock_at_close,

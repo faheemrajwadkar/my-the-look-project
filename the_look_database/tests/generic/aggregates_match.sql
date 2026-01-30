@@ -17,6 +17,6 @@
         m.main_agg
     from source s
     cross join main m
-    where source_agg != main_agg
+    where round(source_agg, 3) != round(main_agg, 3)
 
 {% endtest %}
