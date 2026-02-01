@@ -211,6 +211,20 @@ models:
         data_tests:
           - unique
           - not_null
+      
+      - name: order_id
+        description: "The foreign key of the order to which the order item belongs."
+        data_tests:
+          - not_null
+
+      - name: user_id
+        description: "The foreign key of the customer who placed the order."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                field: user_id
+                to: ref('stg_the_look__users')
 
       - name: product_id
         description: "The foreign key identifying the product purchased."

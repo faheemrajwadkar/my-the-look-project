@@ -1,3 +1,23 @@
+{{
+    config(
+        materialization='incremental',
+        unique_id='order_item_sk',
+        incremental_logic='merge'
+    )
+}}
+
+{% if is_incremental() %}
+
+with updated_order_items as (
+    select distinct 
+        order_item_id
+    from {{ ref("stg_the_look__order_items") }}
+    where GREATEST_IGNORE_NULLS(order_item_created_at, order_item_delivered_at, order_item_shipped_at, order_item_returned_at) 
+            >= (select max(GREATEST_IGNORE_NULLS(order_item_created_at, order_item_delivered_at, order_item_shipped_at, order_item_returned_at)) from {{this}})
+)    
+
+{% endif %}
+
 select 
     oi.order_item_id,
     {{ dbt_utils.generate_surrogate_key(["oi.order_item_id"]) }} as order_item_sk,

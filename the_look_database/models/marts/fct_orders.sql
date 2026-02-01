@@ -1,4 +1,26 @@
-with order_details_pre as (
+{{
+    config(
+        materialized='incremental',
+        unique_key='order_sk',
+        incremental_strategy='merge'
+    )
+}}
+
+
+with 
+{% if is_incremental() %}
+
+    users_with_new_updated_order as (
+        select distinct
+            user_id
+        from {{ ref("stg_the_look__orders") }}
+        where GREATEST_IGNORE_NULLS(order_created_at, order_delivered_at, order_shipped_at, order_returned_at) 
+            >= (select max(GREATEST_IGNORE_NULLS(order_created_at, order_delivered_at, order_shipped_at, order_returned_at)) from {{this}})
+    ),
+
+{% endif %}
+
+order_details_pre as (
     select 
         order_id,
         user_id,
@@ -18,6 +40,13 @@ with order_details_pre as (
         datediff('minute', order_delivered_at, order_returned_at) as time_to_return_mins,
         order_num_of_item as items_ordered
     from {{ ref("stg_the_look__orders") }}
+
+    {% if is_incremental() %}
+    
+        where user_id in (select user_id from users_with_new_updated_order)
+    
+    {% endif %}
+    
 ),
 
 order_details as (
@@ -46,6 +75,18 @@ order_details as (
     from order_details_pre
 ),
 
+{% if is_incremental() %}
+
+    updated_orders as (
+        select distinct
+            order_id
+        from {{ ref("stg_the_look__order_items") }}
+        where GREATEST_IGNORE_NULLS(order_item_created_at, order_item_delivered_at, order_item_shipped_at, order_item_returned_at) 
+            >= (select max(GREATEST_IGNORE_NULLS(order_created_at, order_delivered_at, order_shipped_at, order_returned_at)) from {{this}})
+    ),
+
+{% endif %}
+
 order_metrics as (
     select 
         oi.order_id,
@@ -57,6 +98,13 @@ order_metrics as (
     from {{ ref("stg_the_look__order_items") }} oi
     left join {{ ref("stg_the_look__inventory_items") }} ii 
         on oi.inventory_item_id = ii.inventory_item_id
+    
+    {% if is_incremental() %}
+
+        where oi.order_id in (select order_id from updated_orders)
+
+    {% endif %}
+    
     group by 
         oi.order_id
 )
