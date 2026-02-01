@@ -77,7 +77,7 @@ select
     od.order_status,
     od.user_gender,
     od.order_created_at,
-    dt.order_created_date,
+    dt.date as order_created_date,
     od.order_shipped_at,
     od.time_to_ship_mins,
     od.order_delivered_at,
