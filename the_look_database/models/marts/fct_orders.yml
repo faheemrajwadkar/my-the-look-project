@@ -127,6 +127,11 @@ models:
         data_tests:
           - not_null
         
+      - name: order_created_date
+        description: "The date part of UTC timestamp when the order was placed."
+        data_tests:
+          - not_null
+        
       - name: order_shipped_at
         description: "The UTC timestamp when the order left the distribution center."
         

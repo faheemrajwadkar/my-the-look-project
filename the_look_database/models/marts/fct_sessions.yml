@@ -61,6 +61,11 @@ models:
         data_tests:
           - not_null
         
+      - name: session_created_date
+        description: "The date part of UTC timestamp of the very first event in the session."
+        data_tests:
+          - not_null
+        
       - name: session_ended_at
         description: "The UTC timestamp of the very last event in the session."
         data_tests:

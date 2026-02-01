@@ -18,10 +18,7 @@ renamed as (
         latitude as user_latitude,
         longitude as user_longitude,
         traffic_source as user_traffic_source,
-        COALESCE(
-            TRY_TO_TIMESTAMP_NTZ(created_at, 'YYYY-MM-DD HH:MI:SS UTC'),
-            TRY_TO_TIMESTAMP_NTZ(created_at, 'YYYY-MM-DD HH:MI:SS.FF UTC')
-        ) as user_created_at,
+        {{ cast_as_timestamp("created_at") }} as user_created_at,
         TO_GEOGRAPHY(user_geom_string) user_geom,
         _batched_at,
         _file_source

@@ -77,6 +77,7 @@ select
     od.order_status,
     od.user_gender,
     od.order_created_at,
+    dt.order_created_date,
     od.order_shipped_at,
     od.time_to_ship_mins,
     od.order_delivered_at,
@@ -94,3 +95,5 @@ select
 from order_details od 
 left join order_metrics om 
     on od.order_id = om.order_id 
+left join {{ ref("dim_dates") }} dt 
+    on date(od.order_created_at) = dt.date

@@ -58,6 +58,7 @@ select
     ss.session_browser,
     ss.session_source,
     sm.session_created_at,
+    dt.date as session_created_date,
     sm.session_ended_at,
     datediff('minute', sm.session_created_at, sm.session_ended_at) as session_duration_mins,
     ss.session_event_first_uri,
@@ -80,3 +81,5 @@ left join session_end_details se
     on ss.session_id = se.session_id
 left join session_summary sm
     on sm.session_id = ss.session_id
+left join {{ ref("dim_dates") }} dt
+    on date(sm.session_created_at) = dt.date

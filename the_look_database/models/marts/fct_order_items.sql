@@ -13,6 +13,7 @@ select
     {{ dbt_utils.generate_surrogate_key(["ii.distribution_center_id"]) }} as distribution_center_sk,
     oi.order_item_status,
     oi.order_item_created_at,
+    dt.date as order_item_created_date,
     oi.order_item_shipped_at,
     datediff('minute', oi.order_item_created_at, oi.order_item_shipped_at) as time_to_ship_item_mins,
     order_item_delivered_at,
@@ -25,3 +26,5 @@ select
 from {{ ref("stg_the_look__order_items") }} oi
 left join {{ ref("stg_the_look__inventory_items") }} ii 
     on oi.inventory_item_id = ii.inventory_item_id
+left join {{ ref("dim_dates") }} dt 
+    on date(oi.order_item_created_at) = dt.date
