@@ -1,5 +1,5 @@
 with source as (
-    select * from {{ source('the_look_ecommerce', 'users') }}
+    select * from {{ ref('snp_the_look__users') }}
 ),
 
 renamed as (
@@ -22,10 +22,11 @@ renamed as (
             TRY_TO_TIMESTAMP_NTZ(created_at, 'YYYY-MM-DD HH:MI:SS UTC'),
             TRY_TO_TIMESTAMP_NTZ(created_at, 'YYYY-MM-DD HH:MI:SS.FF UTC')
         ) as user_created_at,
-        user_geom,
+        TO_GEOGRAPHY(user_geom_string) user_geom,
         _batched_at,
         _file_source
     from source
+    where dbt_valid_to = '9999-12-31'
 )
 
 select * from renamed

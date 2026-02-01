@@ -42,3 +42,6 @@ models:
 
     intermediate:
       +materialized: ephemeral
+
+snapshots:
+  +schema: snapshots
