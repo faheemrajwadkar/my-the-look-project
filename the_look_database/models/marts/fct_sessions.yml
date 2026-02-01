@@ -1,0 +1,169 @@
+version: 2
+
+models:
+  - name: fct_sessions
+    description: "A behavioral fact table where each row represents a unique user session. It aggregates event-level data to provide insights into how users navigate the site, where they drop off, and the ultimate success (conversion) of their visit."
+    columns:
+      - name: session_id
+        description: "The natural unique identifier for the session from the source system."
+        data_tests:
+          - unique
+          - not_null
+        
+      - name: session_sk
+        description: "The surrogate key (hash) used for internal warehouse joins."
+        data_tests:
+          - not_null
+        
+      - name: user_id
+        description: "Foreign key identifying the user associated with the session."
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__users')
+                field: user_id
+        
+      - name: user_sk
+        description: "Surrogate foreign key connecting to dim_customers."
+        
+      - name: session_ip_address
+        description: "The IP address recorded at the start of the session."
+        data_tests:
+          - not_null
+        
+      - name: session_city
+        description: "The city derived from the session's IP address."
+        data_tests:
+          - not_null
+        
+      - name: session_state
+        description: "The state or region derived from the session's IP address."
+        data_tests:
+          - not_null
+        
+      - name: session_postal_code
+        description: "The ZIP or postal code derived from the session's IP address."
+        data_tests:
+          - not_null
+        
+      - name: session_browser
+        description: "The web browser used during the session (e.g., Chrome, Safari)."
+        data_tests:
+          - not_null
+        
+      - name: session_source
+        description: "The marketing channel or referral source that initiated the session."
+        data_tests:
+          - not_null
+        
+      - name: session_created_at
+        description: "The UTC timestamp of the very first event in the session."
+        data_tests:
+          - not_null
+        
+      - name: session_created_date
+        description: "The date part of UTC timestamp of the very first event in the session."
+        data_tests:
+          - not_null
+        
+      - name: session_ended_at
+        description: "The UTC timestamp of the very last event in the session."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= session_created_at"
+        
+      - name: session_duration_mins
+        description: "The total length of the session in minutes."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: session_event_first_uri
+        description: "The first URL visited (the 'Landing Page') of the session."
+        data_tests:
+          - not_null
+        
+      - name: session_event_last_uri
+        description: "The last URL visited (the 'Exit Page') of the session."
+        data_tests:
+          - not_null
+        
+      - name: session_clicks
+        description: "The total number of click events recorded during the session."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: session_product_page_visits
+        description: "Count of unique product detail pages viewed during the session."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: session_cart_visits
+        description: "Count of times the user viewed or interacted with their shopping cart."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: session_purchases
+        description: "The number of successful orders completed during this session."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: session_canceled_counts
+        description: "The number of times a user initiated but then cancelled an action."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+        
+      - name: session_result
+        description: "{{ doc('session_result_desc') }}"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - "purchase_completed"
+                  - "cart_abandoned"
+                  - "cancelled"
+                  - "abandoned"
+        
+      - name: session_by_logging_in
+        description: "Boolean flag (1/0) indicating if the user was authenticated/logged in."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 1
+                  - 0
+        
+      - name: is_bounced_session
+        description: "Boolean flag: 1 if the session consisted of only one event/page view."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 1
+                  - 0
+        
+
+        
+        

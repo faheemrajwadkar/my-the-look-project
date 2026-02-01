@@ -1,6 +1,6 @@
 
 with source as (
-    select * from {{ source('the_look_ecommerce', 'distribution_centers') }}
+    select * from {{ ref("snp_the_look__distribution_centers") }}
 ),
 
 renamed as (
@@ -9,10 +9,11 @@ renamed as (
         name as distribution_center_name,
         latitude as distribution_center_location_latitude,
         longitude as distribution_center_location_longitude,
-        distribution_center_geom as distribution_center_geom,
+        TO_GEOGRAPHY(distribution_center_geom_string) as distribution_center_geom,
         _batched_at,
         _file_source
     from source
+    where dbt_valid_to = '9999-12-31'
 )
 
 select * from renamed

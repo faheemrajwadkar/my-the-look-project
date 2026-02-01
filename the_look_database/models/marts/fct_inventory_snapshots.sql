@@ -8,12 +8,14 @@ with products as (
         on p.product_id = pad.product_id
     where pad.product_first_added_at is not null
 ),
+
 dates as (
     select 
         date as dt
     from {{ ref("inter_dates") }}
     where date <= current_date
 ),
+
 date_products as (
     select 
         d.dt,
@@ -23,6 +25,7 @@ date_products as (
     cross join products as p 
     where d.dt >= p.product_first_added_at
 ),
+
 inventory_added as (
     select 
         date(inventory_item_created_at) as dt,
@@ -38,6 +41,7 @@ inventory_added as (
         product_id,
         distribution_center_id
 ),
+
 inventory_sold as (
     select 
         date(oi.order_item_created_at) as dt,
@@ -54,6 +58,7 @@ inventory_sold as (
         oi.product_id,
         p.distribution_center_id
 ),
+
 returned_items as (
     select 
         date(oi.order_item_returned_at) as dt,
@@ -70,6 +75,7 @@ returned_items as (
         oi.product_id,
         p.distribution_center_id
 ),
+
 day_level_counts as (
     select 
         dp.dt,
@@ -94,6 +100,7 @@ day_level_counts as (
         and dp.product_id = rt.product_id
         and dp.distribution_center_id = rt.distribution_center_id
 ),
+
 cumulative as (
     select 
         dt,
@@ -112,6 +119,7 @@ cumulative as (
         sum(value_added) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as value_added_till_date
     from day_level_counts
 ),
+
 main as (
     select 
         dt,
@@ -145,28 +153,41 @@ main as (
         ) as total_inventory_value_at_close
     from cumulative
 ),
+
 final as (
     select 
-        dt,
-        product_id,
-        distribution_center_id,
+        m.dt,
+        dt.date_day_sk as dt_sk,
+        m.product_id,
+        {{ dbt_utils.generate_surrogate_key(["m.product_id"]) }} as product_sk,
+        m.distribution_center_id,
+        {{ dbt_utils.generate_surrogate_key(["m.distribution_center_id"]) }} as distribution_center_sk,
+
+        {{ dbt_utils.generate_surrogate_key([
+            "m.dt", 
+            "m.product_id",
+            "m.distribution_center_id"
+        ])}} as inventory_snapshot_sk,
         
-        coalesce(total_inventory_in_stock_at_open, 0) as total_inventory_in_stock_at_open,
-        coalesce(total_inventory_in_stock_at_close, 0) as total_inventory_in_stock_at_close,
+        coalesce(m.total_inventory_in_stock_at_open, 0) as total_inventory_in_stock_at_open,
+        coalesce(m.total_inventory_in_stock_at_close, 0) as total_inventory_in_stock_at_close,
         
-        last_restocked_at,
-        units_received_today,
-        units_sold_today,
-        units_returned_today,
+        m.last_restocked_at,
+        m.units_received_today,
+        m.units_sold_today,
+        m.units_returned_today,
         
-        coalesce(total_inventory_cost_at_open, 0) as total_inventory_cost_at_open,
-        coalesce(total_inventory_cost_at_close, 0) as total_inventory_cost_at_close,
+        coalesce(m.total_inventory_cost_at_open, 0) as total_inventory_cost_at_open,
+        coalesce(m.total_inventory_cost_at_close, 0) as total_inventory_cost_at_close,
         
-        coalesce(total_inventory_value_at_open, 0) as total_inventory_value_at_open,
-        coalesce(total_inventory_value_at_close, 0) as total_inventory_value_at_close,
+        coalesce(m.total_inventory_value_at_open, 0) as total_inventory_value_at_open,
+        coalesce(m.total_inventory_value_at_close, 0) as total_inventory_value_at_close,
     
-        case when coalesce(total_inventory_in_stock_at_open, 0) = 0 then 1 else 0 end as is_out_of_stock,
-        case when coalesce(total_inventory_in_stock_at_open, 0) < 5 then 1 else 0 end as is_low_stock
-    from main 
+        case when coalesce(m.total_inventory_in_stock_at_open, 0) = 0 then 1 else 0 end as is_out_of_stock,
+        case when coalesce(m.total_inventory_in_stock_at_open, 0) < 5 then 1 else 0 end as is_low_stock
+    from main m 
+    left join {{ ref("dim_dates") }} dt 
+        on date(m.dt) = dt.date
 )
+
 select * from final

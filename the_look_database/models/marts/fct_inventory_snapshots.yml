@@ -1,0 +1,152 @@
+version: 2
+
+models:
+  - name: fct_inventory_snapshots
+    description: "A daily snapshot table tracking inventory levels, values, and movements. It provides a historical record of stock positions at the start and end of each day, allowing for trend analysis of stockouts, inventory aging, and carrying costs."
+    columns:
+      - name: dt
+        description: "The snapshot date. Represents the specific 24-hour period the data covers."
+        data_tests:
+          - not_null
+
+      - name: dt_sk
+        description: "The surrogate key for the dt field."
+        data_tests:
+          - not_null
+
+      - name: product_id
+        description: "Foreign key for the specific product being tracked."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__products')
+                field: product_id
+
+      - name: product_sk
+        description: "Surrogate foreign key connecting to dim_products."
+        data_tests:
+          - not_null
+
+      - name: distribution_center_id
+        description: "Foreign key for the warehouse where the inventory is physically located."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_the_look__distribution_centers')
+                field: distribution_center_id
+
+      - name: distribution_center_sk
+        description: "Surrogate foreign key connecting to dim_distribution_centers."
+        data_tests:
+          - not_null
+
+      - name: inventory_snapshot_sk
+        description: "Surrogate unique primary key for each record in the table."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: total_inventory_in_stock_at_open
+        description: "The quantity of units available for sale at the start of the day (00:00:00)."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: total_inventory_in_stock_at_close
+        description: "The quantity of units remaining in stock at the end of the day (23:59:59)."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: last_restocked_at
+        description: "The UTC timestamp of the most recent shipment received for this product at this location."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "<= date(dt)"
+
+      - name: units_received_today
+        description: "The total quantity of new units added to the inventory during this day."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: units_sold_today
+        description: "The total quantity of units subtracted from inventory due to customer purchases."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: units_returned_today
+        description: "The total quantity of units added back to inventory due to customer returns."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: total_inventory_cost_at_open
+        description: "The total procurement cost of all units in stock at the start of the day."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: total_inventory_cost_at_close
+        description: "The total procurement cost of all units in stock at the end of the day."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: total_inventory_value_at_open
+        description: "The total potential retail value (MSRP) of stock at the start of the day."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: total_inventory_value_at_close
+        description: "The total potential retail value (MSRP) of stock at the end of the day."
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: ">= 0"
+
+      - name: is_out_of_stock
+        description: "Boolean flag: 1 if total_inventory_in_stock_at_close is 0."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 1
+                  - 0
+
+      - name: is_low_stock
+        description: "Boolean flag: 1 if stock levels fall below a predefined threshold (< 5 units)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 1
+                  - 0
+
+        
+        

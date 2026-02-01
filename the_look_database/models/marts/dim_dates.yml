@@ -1,0 +1,83 @@
+version: 2
+
+models:
+  - name: dim_dates
+    description: "A static calendar dimension table. It is used to join with fact table timestamps (like created_at) to enable easy filtering and grouping by standard fiscal and calendar periods without complex SQL date functions."
+    columns:
+      - name: date
+        description: "The actual calendar date in YYYY-MM-DD format. The primary key of the table."
+        data_tests:
+          - unique
+          - not_null
+          
+      - name: date_day_sk
+        description: "A surrogate key for high-performance joins."
+        data_tests:
+          - unique
+          - not_null
+          
+      - name: day_name
+        description: "The name of the day of the week denoted by first three characters (e.g., Mon, Fri)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Sun'
+                  - 'Mon'
+                  - 'Tue'
+                  - 'Wed'
+                  - 'Thu'
+                  - 'Fri'
+                  - 'Sat'
+          
+      - name: month_name
+        description: "The name of the day of the month denoted by first three characters (e.g., Jan, Jul, Sep)."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 'Jan'
+                  - 'Feb'
+                  - 'Mar'
+                  - 'Apr'
+                  - 'May'
+                  - 'Jun'
+                  - 'Jul'
+                  - 'Aug'
+                  - 'Sep'
+                  - 'Oct'
+                  - 'Nov'
+                  - 'Dec'
+          
+      - name: year
+        description: "The start date of the calendar year (e.g., 2024-01-01)."
+        data_tests:
+          - not_null
+          
+      - name: quarter
+        description: "The start date of the calendar quarter (e.g., 2024-04-01 for Q2)."
+        data_tests:
+          - not_null
+          
+      - name: month
+        description: "The start date of the calendar month (e.g., 2024-02-01)."
+        data_tests:
+          - not_null
+          
+      - name: week
+        description: "The start date of the week (e.g., the Sunday or Monday marking the start)."
+        data_tests:
+          - not_null
+          
+      - name: is_weekend
+        description: "A 1/0 flag indicating if the date is a 'Weekend' or 'Weekday'."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - 0
+                  - 1
+          

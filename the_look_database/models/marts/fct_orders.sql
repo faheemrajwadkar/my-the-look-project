@@ -63,7 +63,9 @@ order_metrics as (
 
 select 
     od.order_id,
+    {{ dbt_utils.generate_surrogate_key(["od.order_id"]) }} as order_sk,
     od.user_id,
+    {{ dbt_utils.generate_surrogate_key(["od.user_id"]) }} as user_sk,
     od.user_order_number_asc,
     od.is_first_order,
     od.user_order_number_desc,
@@ -75,6 +77,7 @@ select
     od.order_status,
     od.user_gender,
     od.order_created_at,
+    dt.date as order_created_date,
     od.order_shipped_at,
     od.time_to_ship_mins,
     od.order_delivered_at,
@@ -92,3 +95,5 @@ select
 from order_details od 
 left join order_metrics om 
     on od.order_id = om.order_id 
+left join {{ ref("dim_dates") }} dt 
+    on date(od.order_created_at) = dt.date

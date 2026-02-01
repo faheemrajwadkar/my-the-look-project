@@ -1,0 +1,42 @@
+snapshots:
+  - name: snp_the_look__distribution_centers
+    relation: ref('inter_the_look__distribution_centers')
+    config:
+      unique_key: id
+      strategy: check
+      check_cols: all
+      dbt_valid_to_current: "to_date('9999-12-31')" # Specifies that current records should have `dbt_valid_to` set to `'9999-12-31'` instead of `NULL`.
+
+  - name: snp_the_look__orders
+    relation: source('the_look_ecommerce', 'orders')
+    config:
+      unique_key: order_id
+      strategy: check
+      check_cols: 
+        - status
+      dbt_valid_to_current: "to_date('9999-12-31')"
+
+  - name: snp_the_look__order_items
+    relation: source('the_look_ecommerce', 'order_items')
+    config:
+      unique_key: id
+      strategy: check
+      check_cols: 
+        - status
+      dbt_valid_to_current: "to_date('9999-12-31')"
+
+  - name: snp_the_look__products
+    relation: source('the_look_ecommerce', 'products')
+    config:
+      unique_key: id
+      strategy: check
+      check_cols: all
+      dbt_valid_to_current: "to_date('9999-12-31')"
+
+  - name: snp_the_look__users
+    relation: ref('inter_the_look__users')
+    config:
+      unique_key: id
+      strategy: check
+      check_cols: all
+      dbt_valid_to_current: "to_date('9999-12-31')"

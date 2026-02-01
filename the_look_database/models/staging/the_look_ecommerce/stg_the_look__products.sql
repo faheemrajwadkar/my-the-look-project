@@ -1,5 +1,5 @@
 with source as (
-    select * from {{ source('the_look_ecommerce', 'products') }}
+    select * from {{ ref('snp_the_look__products') }}
 ),
 
 renamed as (
@@ -16,6 +16,7 @@ renamed as (
         _batched_at,
         _file_source
     from source
+    where dbt_valid_to = '9999-12-31'
 )
 
 select * from renamed
