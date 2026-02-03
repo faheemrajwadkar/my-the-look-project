@@ -1,11 +1,3 @@
-{{
-    config(
-        materialization='incremental',
-        unique_id='inventory_snapshot_sk',
-        incremental_logic='append'
-    )
-}}
-
 with products as (
     select distinct 
         p.product_id,
@@ -84,66 +76,82 @@ returned_items as (
         p.distribution_center_id
 ),
 
-main as (
+day_level_counts as (
     select 
         dp.dt,
         dp.product_id,
         dp.distribution_center_id,
-        (
-            sum(case when ad.dt < dp.dt then ad.counts_added else 0 end) 
-            - sum(case when sl.dt < dp.dt then sl.counts_removed_via_orders else 0 end) 
-            + sum(case when rt.dt < dp.dt then rt.counts_returned else 0 end) 
-        ) as total_inventory_in_stock_at_open,
-        (
-            sum(case when ad.dt <= dp.dt then ad.counts_added else 0 end)
-            - sum(case when sl.dt <= dp.dt then sl.counts_removed_via_orders else 0 end)
-            + sum(case when rt.dt <= dp.dt then rt.counts_returned else 0 end)
-        ) as total_inventory_in_stock_at_close,
-        
-        sum(case when ad.dt = dp.dt then ad.counts_added else 0 end) as units_received_today,
-        sum(case when sl.dt = dp.dt then sl.counts_removed_via_orders else 0 end) as units_sold_today,
-        sum(case when rt.dt = dp.dt then rt.counts_returned else 0 end) as units_returned_today,
-
-        (
-            sum(case when ad.dt < dp.dt then ad.cost_added else 0 end) 
-            - coalesce((sum(case when ad.dt < dp.dt then ad.cost_added else 0 end)/nullif(sum(case when ad.dt < dp.dt then ad.counts_added else 0 end), 0)), 0) * sum(case when sl.dt < dp.dt then sl.counts_removed_via_orders else 0 end) 
-            + coalesce((sum(case when ad.dt < dp.dt then ad.cost_added else 0 end)/nullif(sum(case when ad.dt < dp.dt then ad.counts_added else 0 end), 0)), 0) * sum(case when rt.dt < dp.dt then rt.counts_returned else 0 end)
-        ) as total_inventory_cost_at_open,
-        (
-            sum(case when ad.dt <= dp.dt then ad.cost_added else 0 end) 
-            - coalesce((sum(case when ad.dt <= dp.dt then ad.cost_added else 0 end)/nullif(sum(case when ad.dt <= dp.dt then ad.counts_added else 0 end), 0)), 0) * sum(case when sl.dt <= dp.dt then sl.counts_removed_via_orders else 0 end) 
-            + coalesce((sum(case when ad.dt <= dp.dt then ad.cost_added else 0 end)/nullif(sum(case when ad.dt <= dp.dt then ad.counts_added else 0 end), 0)), 0) * sum(case when rt.dt <= dp.dt then rt.counts_returned else 0 end)
-        ) as total_inventory_cost_at_close,
-
-        (
-            sum(case when ad.dt < dp.dt then ad.value_added else 0 end)
-            - coalesce((sum(case when ad.dt < dp.dt then ad.value_added else 0 end)/nullif(sum(case when ad.dt < dp.dt then ad.counts_added else 0 end), 0)), 0) * sum(case when sl.dt < dp.dt then sl.counts_removed_via_orders else 0 end) 
-            + coalesce((sum(case when ad.dt < dp.dt then ad.value_added else 0 end)/nullif(sum(case when ad.dt < dp.dt then ad.counts_added else 0 end), 0)), 0) * sum(case when rt.dt < dp.dt then rt.counts_returned else 0 end)
-        ) as total_inventory_value_at_open,
-        (
-            sum(case when ad.dt <= dp.dt then ad.value_added else 0 end) 
-            - coalesce((sum(case when ad.dt <= dp.dt then ad.value_added else 0 end)/nullif(sum(case when ad.dt <= dp.dt then ad.counts_added else 0 end), 0)), 0) * sum(case when sl.dt <= dp.dt then sl.counts_removed_via_orders else 0 end) 
-            + coalesce((sum(case when ad.dt <= dp.dt then ad.value_added else 0 end)/nullif(sum(case when ad.dt <= dp.dt then ad.counts_added else 0 end), 0)), 0) * sum(case when rt.dt <= dp.dt then rt.counts_returned else 0 end)
-        ) as total_inventory_value_at_close,
-
-        max(case when ad.dt <= dp.dt and ad.counts_added > 0 then dp.dt end) as last_restocked_at
+        coalesce(ad.counts_added, 0) as counts_added,
+        coalesce(sl.counts_removed_via_orders, 0) as counts_removed_via_orders,
+        coalesce(rt.counts_returned, 0) as counts_returned,
+        coalesce(ad.cost_added, 0) as cost_added,
+        coalesce(ad.value_added, 0) as value_added
     from date_products dp 
     left join inventory_added ad 
-        on dp.dt >= ad.dt
+        on dp.dt = ad.dt
         and dp.product_id = ad.product_id
         and dp.distribution_center_id = ad.distribution_center_id
     left join inventory_sold sl
-        on dp.dt >= sl.dt
+        on dp.dt = sl.dt
         and dp.product_id = sl.product_id
         and dp.distribution_center_id = sl.distribution_center_id
     left join returned_items rt
-        on dp.dt >= rt.dt
+        on dp.dt = rt.dt
         and dp.product_id = rt.product_id
         and dp.distribution_center_id = rt.distribution_center_id
-    group by 
-        dp.dt,
-        dp.product_id,
-        dp.distribution_center_id
+),
+
+cumulative as (
+    select 
+        dt,
+        product_id,
+        distribution_center_id,
+        counts_added as counts_added_on_dt,
+        sum(counts_added) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as counts_added_till_date,
+        counts_removed_via_orders as counts_removed_via_orders_on_dt,
+        sum(counts_removed_via_orders) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as counts_removed_via_orders_till_date,
+        counts_returned as counts_returned_on_dt,
+        sum(counts_returned) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as counts_returned_till_date,
+        max(case when counts_added > 0 then dt end) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as last_restocked_at,
+        cost_added as cost_added_on_dt,
+        sum(cost_added) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as cost_added_till_date,
+        value_added as value_added_on_dt,
+        sum(value_added) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as value_added_till_date
+    from day_level_counts
+),
+
+main as (
+    select 
+        dt,
+        product_id,
+        distribution_center_id,
+        
+        lag(counts_added_till_date - counts_removed_via_orders_till_date + counts_returned_till_date) over (partition by product_id, distribution_center_id order by dt) as total_inventory_in_stock_at_open,
+        (counts_added_till_date - counts_removed_via_orders_till_date + counts_returned_till_date) as total_inventory_in_stock_at_close,
+        
+        last_restocked_at,
+        counts_added_on_dt as units_received_today,
+        counts_removed_via_orders_on_dt as units_sold_today,
+        counts_returned_on_dt as units_returned_today,
+        
+        lag(cost_added_till_date 
+            - coalesce((cost_added_till_date/nullif(counts_added_till_date, 0)), 0) * counts_removed_via_orders_till_date 
+            + coalesce((cost_added_till_date/nullif(counts_added_till_date, 0)), 0) * counts_returned_till_date
+        ) over (partition by product_id, distribution_center_id order by dt) as total_inventory_cost_at_open,
+        (cost_added_till_date 
+            - coalesce((cost_added_till_date/nullif(counts_added_till_date, 0)), 0) * counts_removed_via_orders_till_date 
+            + coalesce((cost_added_till_date/nullif(counts_added_till_date, 0)), 0) * counts_returned_till_date
+        ) as total_inventory_cost_at_close,
+        
+        lag(value_added_till_date 
+            - coalesce((value_added_till_date/nullif(counts_added_till_date, 0)), 0) * counts_removed_via_orders_till_date 
+            + coalesce((value_added_till_date/nullif(counts_added_till_date, 0)), 0) * counts_returned_till_date
+        ) over (partition by product_id, distribution_center_id order by dt) as total_inventory_value_at_open,
+        (value_added_till_date 
+            - coalesce((value_added_till_date/nullif(counts_added_till_date, 0)), 0) * counts_removed_via_orders_till_date 
+            + coalesce((value_added_till_date/nullif(counts_added_till_date, 0)), 0) * counts_returned_till_date
+        ) as total_inventory_value_at_close
+    from cumulative
 ),
 
 final as (
@@ -182,4 +190,4 @@ final as (
         on date(m.dt) = dt.date
 )
 
-select sum(total_inventory_in_stock_at_open), sum(total_inventory_in_stock_at_close) from final
+select * from final
