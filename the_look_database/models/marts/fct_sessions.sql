@@ -1,8 +1,33 @@
-with events_table as (
+{{
+    config(
+        materialized='incremental',
+        unique_key='session_sk',
+        incremental_strategy='merge'
+    )
+}}
+
+with 
+{% if is_incremental() %}
+
+    new_sessions as (
+        select distinct
+            session_id as new_session_ids
+        from {{ ref("stg_the_look__events") }}
+        where event_created_at >= (select max(session_created_at) from {{this}} )
+    ),
+
+{% endif %}
+
+events_table as (
     select 
         *,
         row_number() over (partition by session_id order by sequence_number desc) as sequence_number_desc
     from {{ ref("stg_the_look__events") }}
+    
+    {% if is_incremental() %}
+        where session_id in (select new_session_ids from new_sessions)
+    {% endif %}
+    
 ),
 
 session_start_details as (
