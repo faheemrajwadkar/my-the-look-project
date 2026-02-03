@@ -14,7 +14,7 @@ renamed as (
         {{ cast_as_timestamp("shipped_at") }} as order_item_shipped_at,
         {{ cast_as_timestamp("delivered_at") }} as order_item_delivered_at,
         {{ cast_as_timestamp("returned_at") }} as order_item_returned_at,
-        sale_price as order_item_sale_price,
+        cast(sale_price as number(38,2)) as order_item_sale_price,
         _batched_at,
         _file_source
     from source 

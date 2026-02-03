@@ -9,7 +9,7 @@ renamed as (
         category as product_category,
         name as product_name,
         brand as product_brand,
-        retail_price as product_retail_price,
+        cast(retail_price as number(38,2)) as product_retail_price,
         department as product_department,
         sku as product_sku,
         distribution_center_id,

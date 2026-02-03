@@ -6,6 +6,8 @@
     )
 }}
 
+
+
 with inventory_added as (
     select 
         date(inventory_item_created_at) as dt,
@@ -27,6 +29,7 @@ with inventory_added as (
         product_id,
         distribution_center_id
 ),
+
 inventory_sold as (
     select 
         date(oi.order_item_created_at) as dt,
@@ -53,6 +56,7 @@ inventory_sold as (
         oi.product_id,
         p.distribution_center_id
 ),
+
 returned_items as (
     select 
         date(oi.order_item_returned_at) as dt,
@@ -79,6 +83,7 @@ returned_items as (
         oi.product_id,
         p.distribution_center_id
 ),
+
 unionized as (
     select 
         ad.dt,
@@ -129,6 +134,7 @@ unionized as (
         rt.value_returned
     from returned_items rt
 ),
+
 grouped as (
     select 
         dt,
@@ -137,18 +143,19 @@ grouped as (
         sum(counts_added) as counts_added_on_dt,
         sum(counts_removed_via_orders) as counts_removed_via_orders_on_dt,
         sum(counts_returned) as counts_returned_on_dt,
-        sum(cost_added) as cost_added_on_dt,
-        sum(cost_removed_via_orders) as cost_removed_via_orders_on_dt,
-        sum(cost_returned) as cost_returned_on_dt,
-        sum(value_added) as value_added_on_dt,
-        sum(value_removed_via_orders) as value_removed_via_orders_on_dt,
-        sum(value_returned) as value_returned_on_dt
+        sum(round(cost_added, 2)) as cost_added_on_dt,
+        sum(round(cost_removed_via_orders, 2)) as cost_removed_via_orders_on_dt,
+        sum(round(cost_returned, 2)) as cost_returned_on_dt,
+        sum(round(value_added, 2)) as value_added_on_dt,
+        sum(round(value_removed_via_orders, 2)) as value_removed_via_orders_on_dt,
+        sum(round(value_returned, 2)) as value_returned_on_dt
     from unionized 
     group by 
         dt,
         product_id,
         distribution_center_id
 ),
+
 cumulative as (
     select 
         dt,
@@ -172,9 +179,10 @@ cumulative as (
         sum(value_added_on_dt) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as value_added_till_dt,
         sum(value_removed_via_orders_on_dt) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as value_removed_via_orders_till_dt,
         sum(value_returned_on_dt) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as value_returned_till_dt,
-        max(case when counts_added_on_dt > 0 then dt end) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and 1 preceding) as last_restocked_at
+        max(case when counts_added_on_dt > 0 then dt end) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as last_restocked_at
     from grouped
 ),
+
 inventory_metrics_dt as (
     select 
         dt,
@@ -225,6 +233,8 @@ inventory_metrics_dt as (
     
     from cumulative 
 ),
+
+
 products as (
     select distinct 
         p.product_id,
@@ -235,12 +245,14 @@ products as (
         on p.product_id = pad.product_id
     where pad.product_first_added_at is not null
 ),
+
 dates as (
     select 
         date as dt
     from {{ ref("dim_dates") }}
     where date <= current_date
 ),
+
 dates_and_products as (
     select 
         d.dt,
@@ -256,6 +268,8 @@ dates_and_products as (
 
     {% endif %}
 ),
+
+
 daily_inventory as (
     select 
         dp.dt,
@@ -305,6 +319,26 @@ daily_inventory as (
     from {{ this }}
     where dt = (select max(dt) - interval '4 day' from {{ this }})
     ),
+
+    incremental_summed as (
+        select 
+            dt,
+            dt_sk,
+            product_id,
+            product_sk,
+            distribution_center_id,
+            distribution_center_sk,
+            inventory_snapshot_sk,
+            sum(total_inventory_in_stock_at_close) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_in_stock_at_close,
+            max(last_restocked_at) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as last_restocked_at,
+            units_received_today,
+            units_sold_today,
+            units_returned_today,
+            sum(total_inventory_cost_at_close) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_cost_at_close,
+            sum(total_inventory_value_at_close) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_value_at_close
+        from incremental_combined
+    ),
+
     incremental_final as (
         select 
             dt,
@@ -314,23 +348,24 @@ daily_inventory as (
             distribution_center_id,
             distribution_center_sk,
             inventory_snapshot_sk,
-            sum(total_inventory_in_stock_at_open) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_in_stock_at_open,
-            sum(total_inventory_in_stock_at_close) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_in_stock_at_close,
-            max(last_restocked_at) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as last_restocked_at,
+            coalesce(lag(total_inventory_in_stock_at_close) over (partition by product_id, distribution_center_id order by dt),  0) as total_inventory_in_stock_at_open,
+            total_inventory_in_stock_at_close,
+            last_restocked_at,
             units_received_today,
             units_sold_today,
             units_returned_today,
-            sum(total_inventory_cost_at_open) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_cost_at_open,
-            sum(total_inventory_cost_at_close) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_cost_at_close,
-            sum(total_inventory_value_at_open) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_value_at_open,
-            sum(total_inventory_value_at_close) over (partition by product_id, distribution_center_id order by dt rows between unbounded preceding and current row) as total_inventory_value_at_close
-        from incremental_combined
+            coalesce(lag(total_inventory_cost_at_close) over (partition by product_id, distribution_center_id order by dt),  0) as total_inventory_cost_at_open,
+            total_inventory_cost_at_close,
+            coalesce(lag(total_inventory_value_at_close) over (partition by product_id, distribution_center_id order by dt),  0) as total_inventory_value_at_open,
+            total_inventory_value_at_close
+        from incremental_summed
     )
     select 
         *,
         case when total_inventory_in_stock_at_open = 0 then 1 else 0 end as is_out_of_stock,
         case when total_inventory_in_stock_at_open < 5 then 1 else 0 end as is_low_stock
     from incremental_final
+    where dt > (select max(dt) - interval '4 day' from {{ this }})
 
 {% else %}
 
@@ -341,5 +376,3 @@ daily_inventory as (
     from daily_inventory 
 
 {% endif %}
-
-
