@@ -25,7 +25,6 @@ jobs:
       - name: Install dbt
         run: pip install dbt-core dbt-snowflake
 
-      # ⭐ Create dummy profile (NO real credentials needed)
       - name: Create CI profile
         run: |
           mkdir -p ~/.dbt
@@ -45,11 +44,12 @@ jobs:
                 threads: 4
           EOF
 
-      # ⭐ compile only (NO database connection happens)
+      - name: Install dbt packages
+        run: dbt deps
+
       - name: Compile dbt project
         run: dbt compile
 
-      # ⭐ generate docs UI using compiled artifacts
       - name: Generate Docs
         run: dbt docs generate --no-compile
 
