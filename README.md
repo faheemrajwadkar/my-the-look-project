@@ -4,7 +4,7 @@ A production-grade **Analytics Engineering** project transforming raw event data
 ## 🗺️ 1. Architecture & Data Flow
 
 <p align="center">
-  <img src="/workspaces/my-the-look-project/the_look_database/assets/dwh_structure.png" width="1200">
+  <img src="./the_look_database/assets/dwh_structure.png" width="1200">
 </p>
 
 🔗 Live Documentation & Interactive DAG: [🟧 dbt docs](https://faheemrajwadkar.github.io/my-the-look-project/)
@@ -140,7 +140,7 @@ erDiagram
 **The Problem:** Creating a daily periodic snapshot for every product across every distribution center created a massive "Data Explosion." A naive cross-join generated **~76M rows**, leading to high storage costs and a **150-second runtime** that would have scaled exponentially.
 
 <p align="center">
-  <img src="/workspaces/my-the-look-project/the_look_database/assets/case study.png" width="1200">
+  <img src="./the_look_database/assets/case study.png" width="1200">
 </p>
 
 **Optimization 1: Intelligent Scaffolding (Row Reduction)**
@@ -170,6 +170,7 @@ erDiagram
   - **Observability:** Integrated Source Freshness monitoring to detect and alert on upstream ingestion delays.
 - **Engineering Standards & Handover:** Maintained 100% metadata coverage using **Modular YAML files** and **Doc Blocks**, ensuring the warehouse is self-documenting and accessible to stakeholders.
 
+</br>
 
 ## 🎓 5. Lessons Learned
 - **Snapshot Sequencing:** I learned that snapshots must be implemented directly at the source to preserve an immutable history before any staging logic is applied. 
