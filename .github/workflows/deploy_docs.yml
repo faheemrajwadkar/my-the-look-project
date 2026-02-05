@@ -25,14 +25,7 @@ jobs:
 
       - name: Generate Docs
         working-directory: ./the_look_database
-        run: dbt docs generate
-        env:
-          DBT_SNOWFLAKE_ACCOUNT: ${{ secrets.DBT_ACCOUNT }}
-          DBT_SNOWFLAKE_USER: ${{ secrets.DBT_USER }}
-          DBT_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_PASSWORD }}
-          DBT_SNOWFLAKE_ROLE: ${{ secrets.DBT_ROLE }}
-          DBT_SNOWFLAKE_DATABASE: ${{ secrets.DBT_DATABASE }}
-          DBT_SNOWFLAKE_WAREHOUSE: ${{ secrets.DBT_WAREHOUSE }}
+        run: dbt docs generate --empty-catalog
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
