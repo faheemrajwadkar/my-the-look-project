@@ -22,8 +22,8 @@ jobs:
           dbt deps
 
       - name: Generate Docs
-        # The key is to tell dbt exactly where the project and profile are
-        run: dbt docs generate --project-dir . --profiles-dir .
+        working-directory: ./the_look_database
+        run: dbt docs generate
         env:
           # You must add these secrets in GitHub Settings > Secrets > Actions
           DBT_SNOWFLAKE_ACCOUNT: ${{ secrets.DBT_ACCOUNT }}
