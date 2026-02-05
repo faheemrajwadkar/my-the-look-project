@@ -22,7 +22,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install dbt
-        run: pip install dbt-core dbt-snowflake
+        run: pip install dbt-core
 
       - name: Create CI profile
         run: |
@@ -32,7 +32,7 @@ jobs:
             target: ci
             outputs:
               ci:
-                type: snowflake
+                type: postgres
                 account: dummy
                 user: dummy
                 password: dummy
