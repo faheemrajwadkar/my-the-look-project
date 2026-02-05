@@ -1,0 +1,38 @@
+name: Deploy dbt Docs
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          pip install dbt-snowflake
+          dbt deps
+
+      - name: Generate Docs
+        # The key is to tell dbt exactly where the project and profile are
+        run: dbt docs generate --project-dir . --profiles-dir .
+        env:
+          # You must add these secrets in GitHub Settings > Secrets > Actions
+          DBT_SNOWFLAKE_ACCOUNT: ${{ secrets.DBT_ACCOUNT }}
+          DBT_SNOWFLAKE_USER: ${{ secrets.DBT_USER }}
+          DBT_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_PASSWORD }}
+          DBT_SNOWFLAKE_ROLE: ${{ secrets.DBT_ROLE }}
+          DBT_SNOWFLAKE_DATABASE: ${{ secrets.DBT_DATABASE }}
+          DBT_SNOWFLAKE_WAREHOUSE: ${{ secrets.DBT_WAREHOUSE }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target
