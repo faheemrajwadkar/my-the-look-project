@@ -22,7 +22,7 @@ jobs:
           python-version: "3.10"
 
       - name: Install dbt
-        run: pip install dbt-core
+        run: pip install dbt-core dbt-snowflake
 
       - name: Create CI profile
         run: |
@@ -47,7 +47,7 @@ jobs:
         run: dbt deps
       
       - name: Compile dbt project
-        run: dbt compile
+        run: dbt parse
 
       - name: Generate Docs
         run: dbt docs generate --no-compile
