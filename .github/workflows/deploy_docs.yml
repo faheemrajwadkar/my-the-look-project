@@ -1,31 +1,57 @@
 name: Deploy dbt Docs
+
 on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ] # This allows you to see it running on the PR page
+    branches: [ main ] 
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./the_look_database
+
     steps:
       - uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: "3.10"
 
       - name: Install dbt
-        run: pip install dbt-snowflake
+        run: pip install dbt-core dbt-snowflake
 
-      - name: Install dbt packages
-        working-directory: ./the_look_database
-        run: dbt deps
+      # ⭐ Create dummy profile (NO real credentials needed)
+      - name: Create CI profile
+        run: |
+          mkdir -p ~/.dbt
+          cat <<EOF > ~/.dbt/profiles.yml
+          the_look_database:
+            target: ci
+            outputs:
+              ci:
+                type: snowflake
+                account: dummy
+                user: dummy
+                password: dummy
+                role: dummy
+                database: dummy
+                warehouse: dummy
+                schema: dummy
+                threads: 4
+          EOF
 
+      # ⭐ compile only (NO database connection happens)
+      - name: Compile dbt project
+        run: dbt compile
+
+      # ⭐ generate docs UI using compiled artifacts
       - name: Generate Docs
-        working-directory: ./the_look_database
-        run: dbt docs generate --empty-catalog
+        run: dbt docs generate --no-compile
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
