@@ -1,3 +1,10 @@
+name: Deploy dbt Docs
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ] # This allows you to see it running on the PR page
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
