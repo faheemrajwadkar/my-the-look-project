@@ -22,7 +22,7 @@ jobs:
     defaults:
         run:
           shell: bash
-          working-directory: ./the_look_database
+          working-directory: ./the_look_database/
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -36,9 +36,8 @@ jobs:
       # Build the necessary environment
       - name: Install dbt and verify connection
         run: |
-          pip install dbt-snowflake
-          dbt deps
-          dbt debug
+          pwd
+          echo $DBT_SNOWFLAKE_PASSWORD
         env:
           type: snowflake # Required: snowflake, bigquery, databricks, redshift, postgres, etc
           # Connection identifiers (placeholder examples, see adapter-specific pages for supported configs)
