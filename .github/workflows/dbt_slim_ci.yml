@@ -35,10 +35,24 @@ jobs:
         with:
           python-version: '3.12' 
       
-      # Build the necessary environment
-      - name: Install dbt and verify connection
+      - name: Download Production Manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: dbt-manifest
+          path: ./the_look_database/state/ # Download into a 'state' folder
+        continue-on-error: true # Prevents failure if the first run hasn't happened yet
+
+      - name: Install Dependencies
         run: |
           pip install dbt-snowflake --quiet
           dbt deps
-          dbt debug --target ci
+
+      - name: Connection Debug
+        run: dbt debug --target ci
+
+      - name: Slim CI Build
+        # This only runs if Step 1 succeeds
+        if: success()
+        run: |
+          dbt build --select state:modified+ --state ./state --target ci
 
