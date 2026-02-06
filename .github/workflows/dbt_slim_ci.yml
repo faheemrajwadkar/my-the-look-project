@@ -41,5 +41,4 @@ jobs:
           pip install dbt-snowflake --quiet
           dbt deps
           dbt debug --target ci
-        env:
-          DBT_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_SNOWFLAKE_PASSWORD }}
+
