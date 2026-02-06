@@ -51,8 +51,13 @@ jobs:
         run: dbt debug --target ci
 
       - name: Slim CI Build
-        # This only runs if Step 1 succeeds
-        if: success()
         run: |
-          dbt build --select state:modified+ --state ./state --target ci
+          # Check if the manifest exists. If yes, do Slim CI. If no, do a regular build.
+          if [ -f "./state/manifest.json" ]; then
+            echo "Manifest found. Running Slim CI..."
+            dbt build --select state:modified+ --state ./state --target ci
+          else
+            echo "No manifest found. Running full CI build..."
+            dbt build --target ci
+          fi
 
