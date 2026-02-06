@@ -39,7 +39,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v6
         with:
           # The name of the workflow that SAVES the manifest
-          workflow: dbt_save_manifest.yml 
+          workflow: save_prod_manifest.yml 
           name: dbt-manifest
           # Only take the manifest from a successful run on 'main'
           branch: main
