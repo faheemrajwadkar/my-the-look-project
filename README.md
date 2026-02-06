@@ -26,7 +26,11 @@ Leveraged dbt (data build tool) to implement a Modular Dimensional Model.
   - **Gold (Marts):** Audit-ready Star Schema optimized for BI performance and consistent metric reporting.
 
 - **Orchestration & DevOps:**
-  - **CI/CD:** GitHub Actions serves as the gatekeeper, executing dbt-checkpoint and dbt parse to ensure zero-regression merges into the main branch.
+  - **CI/CD:**
+    - **Slim CI Pipeline:** Automated testing via GitHub Actions that identifies and tests only modified models using `state:modified+` logic. This minimizes Snowflake compute costs by deferring to production for unchanged upstream dependencies.
+    - **Ephemeral Environments:** Orchestrated an automated cleanup process that drops temporary CI schemas in Snowflake upon Pull Request closure, ensuring a clutter-free and cost-efficient warehouse.
+    - Gatekeeping: Strict enforcement of `dbt build` (`run` + `test`) to ensure zero-regression merges into the main branch.
+
   - **Workflow Management:** Apache Airflow manages the DAG execution, facilitating automated schedules and providing a centralized plane for pipeline monitoring and failure alerts.
 
 </br>
