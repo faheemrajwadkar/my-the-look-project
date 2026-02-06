@@ -1,0 +1,36 @@
+name: Save Production Manifest
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build_and_archive:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./the_look_database/
+    env:
+      DBT_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_SNOWFLAKE_PASSWORD }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          pip install dbt-snowflake
+          dbt deps
+
+      - name: Compile dbt
+        # dbt compile generates the manifest.json without running data in Snowflake
+        run: dbt compile --target prod 
+
+      - name: Upload Manifest Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-manifest
+          path: ./the_look_database/target/manifest.json
+          retention-days: 7
