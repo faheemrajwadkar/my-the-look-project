@@ -21,7 +21,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install dbt-snowflake
+          pip install dbt-snowflake --quiet
           dbt deps
 
       - name: Compile dbt
