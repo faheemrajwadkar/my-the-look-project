@@ -35,7 +35,7 @@ jobs:
       
       # Build the necessary environment
       - name: Install dbt and verify connection
-        run: 
+        run: |
           pip install dbt-snowflake
           dbt deps
           dbt debug
