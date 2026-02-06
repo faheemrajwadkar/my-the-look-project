@@ -10,8 +10,12 @@ on:
 jobs:
   drop_ci_schema:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./the_look_database/
     env:
       DBT_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_SNOWFLAKE_PASSWORD }}
+      
     steps:
       - uses: actions/checkout@v4
 
