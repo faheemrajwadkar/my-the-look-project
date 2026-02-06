@@ -17,4 +17,4 @@ jobs:
 
       - name: Drop PR Schema
         run: |
-          dbt run-operation drop_ci_schema --target ci
+          dbt run-operation drop_ci_schema --target ci --profiles-dir
