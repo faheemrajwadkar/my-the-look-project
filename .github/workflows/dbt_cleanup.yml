@@ -1,0 +1,20 @@
+name: CI Cleanup
+
+on:
+  pull_request:
+    types: [closed] # Triggers when the PR is either merged or closed
+
+jobs:
+  drop_ci_schema:
+    runs-on: ubuntu-latest
+    env:
+      DBT_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_SNOWFLAKE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dbt
+        run: pip install dbt-snowflake quiet
+
+      - name: Drop PR Schema
+        run: |
+          dbt run-operation drop_ci_schema --target ci
