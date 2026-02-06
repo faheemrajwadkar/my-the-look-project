@@ -1,0 +1,63 @@
+# This is a basic workflow to help you get started with Actions
+
+name: DBT Slim CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    env:
+      DBT_SNOWFLAKE_PASSWORD: ${{ secrets.DBT_SNOWFLAKE_PASSWORD }}
+    defaults:
+        run:
+          shell: bash
+          working-directory: ./the_look_database/
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12' 
+      
+      - name: Download Production Manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: dbt-manifest
+          path: ./the_look_database/state/ # Download into a 'state' folder
+        continue-on-error: true # Prevents failure if the first run hasn't happened yet
+
+      - name: Install Dependencies
+        run: |
+          pip install dbt-snowflake --quiet
+          dbt deps
+
+      - name: Connection Debug
+        run: dbt debug --target ci
+
+      - name: Slim CI Build
+        run: |
+          # Check if the manifest exists. If yes, do Slim CI. If no, do a regular build.
+          if [ -f "./state/manifest.json" ]; then
+            echo "Manifest found. Running Slim CI..."
+            dbt build --select state:modified+ --state ./state --target ci
+          else
+            echo "No manifest found. Running full CI build..."
+            dbt build --target ci
+          fi
+
