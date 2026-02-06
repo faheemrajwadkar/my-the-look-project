@@ -36,11 +36,18 @@ jobs:
           python-version: '3.12' 
       
       - name: Download Production Manifest
-        uses: actions/download-artifact@v4
+        uses: dawidd6/action-download-artifact@v6
         with:
+          # The name of the workflow that SAVES the manifest
+          workflow: save_prod_manifest.yml 
           name: dbt-manifest
-          path: ./the_look_database/state/ # Download into a 'state' folder
-        continue-on-error: true # Prevents failure if the first run hasn't happened yet
+          # Only take the manifest from a successful run on 'main'
+          branch: main
+          path: ./the_look_database/state/
+          # Ensure it gets the very latest one
+          search_artifacts: true 
+          # Don't fail the whole PR if this is the very first time
+          if_no_artifact_found: warn
 
       - name: Install Dependencies
         run: |
