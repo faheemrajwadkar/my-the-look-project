@@ -29,7 +29,7 @@ Leveraged dbt (data build tool) to implement a Modular Dimensional Model.
   - **CI/CD:**
     - **Slim CI Pipeline:** Automated testing via GitHub Actions that identifies and tests only modified models using `state:modified+` logic. This minimizes Snowflake compute costs by deferring to production for unchanged upstream dependencies.
     - **Ephemeral Environments:** Orchestrated an automated cleanup process that drops temporary CI schemas in Snowflake upon Pull Request closure, ensuring a clutter-free and cost-efficient warehouse.
-    - Gatekeeping: Strict enforcement of `dbt build` (`run` + `test`) to ensure zero-regression merges into the main branch.
+    - **Gatekeeping:** Strict enforcement of `dbt build` (`run` + `test`) to ensure zero-regression merges into the main branch.
 
   - **Workflow Management:** Apache Airflow manages the DAG execution, facilitating automated schedules and providing a centralized plane for pipeline monitoring and failure alerts.
 
@@ -156,8 +156,8 @@ erDiagram
 - **Impact:** Runtime dropped from **~150s to ~60s (60% improvement)**.
 
 **Optimization 3: The "Anchor-Delta" Incremental Pattern**
-- Strategy: Standard incremental logic (`where date > max(date)`) breaks window functions (like `SUM() OVER()`). I implemented a pattern that "anchors" to the state of the last confirmed full day and appends the new daily "delta."
-- Impact: Model refresh time is now **~12 seconds**, making it ultra-efficient for daily production runs.
+- **Strategy:** Standard incremental logic (`where date > max(date)`) breaks window functions (like `SUM() OVER()`). I implemented a pattern that "anchors" to the state of the last confirmed full day and appends the new daily "delta."
+- **Impact:** Model refresh time is now **~12 seconds**, making it ultra-efficient for daily production runs.
 
 **The Economic Impact (ROI)**
 - **Compute Optimization:** Reduced Snowflake credit consumption by 92%
@@ -167,7 +167,7 @@ erDiagram
 </br>
 
 ## 🧪 4. Data Quality & Operational Rigor
-- **State Management:** Implemented **SCD Type 2 Snapshots** on volatile sources (e.g., Product Pricing, Order Status, User Details) to maintain historical accuracy and prevent "data amnesia."
+- **State Management:** Implemented **SCD Type 2 Snapshots** on volatile sources (e.g., Product Pricing, Order Status, User Details) to maintain historical accuracy.
 - **Data Contracts:** Enforced integrity through a hybrid testing strategy:
   - **Generic Tests:** Uniqueness, non-nullability, and referential integrity across the Star Schema.
   - **Singular Tests:** Custom SQL snippets to validate business logic (e.g., ensuring inventory levels never drop below zero).
