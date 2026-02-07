@@ -186,8 +186,8 @@ erDiagram
   - Should have created snapshots before staging, realized it later and had to re-do my staging models.
 
 **What I’d try to do differently:** 
-    - If scaling to 100x data, I would implement Incremental models for the Staging layer earlier, and subsequently for Dimension tables as well.
-    - Explore **Hybrid Materializations** for Intermediate tables: I would try using Snowflake Temporary Tables for compute-heavy logic that is too expensive to run as a subquery (Ephemeral), but too transient to store permanently.
+  - If scaling to 100x data, I would implement Incremental models for the Staging layer earlier, and subsequently for Dimension tables as well.
+  - Explore **Hybrid Materializations** for Intermediate tables: I would try using Snowflake Temporary Tables for compute-heavy logic that is too expensive to run as a subquery (Ephemeral), but too transient to store permanently.
 
 </br>
 
