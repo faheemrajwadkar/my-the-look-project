@@ -2,9 +2,9 @@ from airflow.sdk import dag
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from cosmos import DbtTaskGroup, ProjectConfig, ProfileConfig, ExecutionConfig
 from cosmos.constants import InvocationMode
-
-
 from cosmos.profiles.snowflake import SnowflakeUserPasswordProfileMapping
+
+from include.utils.alerts import slack_failure_callback
 import os 
 import pendulum
 import datetime
@@ -36,6 +36,7 @@ execution_config = ExecutionConfig(
         start_date = pendulum.datetime(2024, 1, 1, tz = "UTC"),
         catchup = False,
         dagrun_timeout=datetime.timedelta(minutes=60),
+        on_failure_callback=slack_failure_callback,
         tags=["core", "models"],
 )
 def run_data_pipeline():

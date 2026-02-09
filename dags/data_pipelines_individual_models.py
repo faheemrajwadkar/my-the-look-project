@@ -2,9 +2,9 @@ from airflow.sdk import dag, chain
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from cosmos import DbtDag, ProjectConfig, ProfileConfig, ExecutionConfig, RenderConfig
 from cosmos.constants import InvocationMode
-
-
 from cosmos.profiles.snowflake import SnowflakeUserPasswordProfileMapping
+
+from include.utils.alerts import slack_failure_callback
 import os 
 import pendulum
 import datetime
@@ -55,5 +55,6 @@ for model in models:
         schedule=None,
         start_date=pendulum.datetime(2024, 1, 1),
         catchup=False,
+        on_failure_callback=slack_failure_callback,
         tags=["individual"],
     )

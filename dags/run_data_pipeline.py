@@ -6,6 +6,7 @@ from cosmos.constants import InvocationMode
 from cosmos.profiles.snowflake import SnowflakeUserPasswordProfileMapping
 
 from include.utils.ingestion_helpers import get_table_metadata
+from include.utils.alerts import slack_failure_callback
 
 import os 
 import pendulum
@@ -38,6 +39,7 @@ execution_config = ExecutionConfig(
         start_date = pendulum.datetime(2024, 1, 1, tz = "UTC"),
         catchup = False,
         dagrun_timeout=datetime.timedelta(minutes=60),
+        on_failure_callback=slack_failure_callback,
         tags=["core", "raw+models"],
 )
 def run_data_pipeline():
