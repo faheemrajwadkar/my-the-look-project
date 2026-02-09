@@ -31,7 +31,7 @@ execution_config = ExecutionConfig(
 )
 
 @dag(
-        dag_id = "__refresh_data_models",
+        dag_id = "02__refresh_data_models",
         schedule = None,
         start_date = pendulum.datetime(2024, 1, 1, tz = "UTC"),
         catchup = False,
@@ -40,7 +40,7 @@ execution_config = ExecutionConfig(
 )
 def run_data_pipeline():
     project_dag = DbtTaskGroup(
-        group_id = "__refresh_data_models",
+        group_id = "02__refresh_data_models",
         profile_config = profile_config,
         project_config = project_config,
         execution_config = execution_config,

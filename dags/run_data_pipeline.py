@@ -33,7 +33,7 @@ execution_config = ExecutionConfig(
 )
 
 @dag(
-        dag_id = "__run_data_pipeline",
+        dag_id = "00__run_data_pipeline",
         schedule = None,
         start_date = pendulum.datetime(2024, 1, 1, tz = "UTC"),
         catchup = False,

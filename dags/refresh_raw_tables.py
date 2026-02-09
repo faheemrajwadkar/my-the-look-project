@@ -4,7 +4,7 @@ from include.utils.ingestion_helpers import get_table_metadata
 from datetime import datetime
 
 @dag(
-    dag_id="__refresh_raw_tables",
+    dag_id="01__refresh_raw_tables",
     schedule=None, 
     start_date=datetime(2024, 1, 1), 
     catchup=False,
