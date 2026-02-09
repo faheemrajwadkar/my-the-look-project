@@ -197,17 +197,23 @@ erDiagram
 
 ## 📂 6. Project Structure
 ```bash
-├── macros/               # Custom SQL logic (e.g., timestamp casting)
-├── models/
-│   ├── staging/          # Ingestion layer with source-aligned sub-folders
-│   ├── intermediate/     
-│   │   ├── prep/         # Source data transformations for Snapshots
-│   │   └── marts/        # Business logic & metric calculations
-│   └── marts/            # Final Star Schema (Gold layer) for BI consumption
-├── snapshots/            # SCD Type 2 logic for volatile source tracking
-└── tests/                
-    ├── generic/          # Reusable schema validation tests
-    └── singular/         # Business-critical logic (e.g., Inventory Stock Match)
+├── dags/                     # Airflow DAGs (Master Pipeline & Ingestion logic)
+├── dbt/                      # Core dbt project (Integrated via Cosmos)
+│   ├── macros/               # Custom SQL logic (e.g., timestamp casting)
+│   ├── models/
+│   │   ├── staging/          # Ingestion layer with source-aligned sub-folders
+│   │   ├── intermediate/     
+│   │   │   ├── prep/         # Source data transformations for Snapshots
+│   │   │   └── marts/        # Business logic & metric calculations
+│   │   └── marts/            # Final Star Schema (Gold layer) for BI consumption
+│   ├── snapshots/            # SCD Type 2 logic for volatile source tracking
+│   └── tests/                
+│       ├── generic/          # Reusable schema validation tests
+│       └── singular/         # Business-critical logic (e.g., Inventory Stock Match)
+├── include/
+│   └── utils/                # Python helpers (Metadata-driven ingestion logic)
+├── Dockerfile                # Astro CLI environment & dependency definition
+└── packages.txt              # System-level dependencies for Airflow/Astro
 ```
 
 </br>
