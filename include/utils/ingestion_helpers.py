@@ -19,4 +19,4 @@ def get_table_metadata(database_name, schema_name):
     """
     records = hook.get_records(query)
 
-    return {row[0]: row[1] for row in records}
+    return records

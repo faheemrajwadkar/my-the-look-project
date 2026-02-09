@@ -10,7 +10,7 @@ from os import walk
 
 # DBT_PROJECT_PATH = f"{os.environ['AIRFLOW_HOME']}/the_look_database"
 
-DBT_PROJECT_PATH = f"/workspaces/my-the-look-project/the_look_database"
+DBT_PROJECT_PATH = f"{os.environ['AIRFLOW_HOME']}/the_look_database"
 
 files_in_staging = os.listdir(DBT_PROJECT_PATH + f"/models/staging/the_look_ecommerce")
 
