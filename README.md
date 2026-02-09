@@ -31,7 +31,10 @@ Leveraged dbt (data build tool) to implement a Modular Dimensional Model.
     - **Ephemeral Environments:** Orchestrated an automated cleanup process that drops temporary CI schemas in Snowflake upon Pull Request closure, ensuring a clutter-free and cost-efficient warehouse.
     - **Gatekeeping:** Strict enforcement of `dbt build` (`run` + `test`) to ensure zero-regression merges into the main branch.
 
-  - **Workflow Management:** Apache Airflow manages the DAG execution, facilitating automated schedules and providing a centralized plane for pipeline monitoring and failure alerts.
+  - **Workflow Management:** 
+    - **Dynamic Ingestion Engine:** Developed a Python task that extracts raw tables from Snowflake’s `INFORMATION_SCHEMA` to automate `COPY INTO` commands from GCP External Stages. This ensures the pipeline scales automatically as new source tables are added without manual code changes.
+    - **dbt-as-a-DAG (Cosmos):** Leveraged **Astronomer Cosmos** to render dbt models into visual **Airflow TaskGroups**. This provides node-level retry capabilities and clear dependency mapping directly in the Airflow UI.
+    - **End-to-End Reliability:** Established a "Master DAG" that enforces a strict `Ingest → Transform → Test` sequence, ensuring that downstream BI layers never consume stale or unvalidated data.
 
 </br>
 
@@ -172,6 +175,7 @@ erDiagram
   - **Generic Tests:** Uniqueness, non-nullability, and referential integrity across the Star Schema.
   - **Singular Tests:** Custom SQL snippets to validate business logic (e.g., ensuring inventory levels never drop below zero).
   - **Observability:** Integrated Source Freshness monitoring to detect and alert on upstream ingestion delays.
+- **Operational Traceability:** Implemented automated audit logging during ingestion (using `SYSDATE()` and `METADATA$FILENAME`), enabling full lineage tracking from the raw GCP file to the final Gold mart.
 - **Engineering Standards & Handover:** Maintained 100% metadata coverage using **Modular YAML files** and **Doc Blocks**, ensuring the warehouse is self-documenting and accessible to stakeholders.
 
 </br>
