@@ -25,16 +25,16 @@ Leveraged dbt (data build tool) to implement a Modular Dimensional Model.
   - **Silver (Intermediate):** Complex business logic, product or order metric calculations, and historical versioning.
   - **Gold (Marts):** Audit-ready Star Schema optimized for BI performance and consistent metric reporting.
 
-- **Orchestration & DevOps:**
-  - **CI/CD:**
-    - **Slim CI Pipeline:** Automated testing via GitHub Actions that identifies and tests only modified models using `state:modified+` logic. This minimizes Snowflake compute costs by deferring to production for unchanged upstream dependencies.
-    - **Ephemeral Environments:** Orchestrated an automated cleanup process that drops temporary CI schemas in Snowflake upon Pull Request closure, ensuring a clutter-free and cost-efficient warehouse.
-    - **Gatekeeping:** Strict enforcement of `dbt build` (`run` + `test`) to ensure zero-regression merges into the main branch.
-
-  - **Workflow Management:** 
+- **Orchestration & Workflow Management:**
+  - **Orchestration:** 
     - **Dynamic Ingestion Engine:** Developed a Python task that extracts raw tables from Snowflake’s `INFORMATION_SCHEMA` to automate `COPY INTO` commands from GCP External Stages. This ensures the pipeline scales automatically as new source tables are added without manual code changes.
     - **dbt-as-a-DAG (Cosmos):** Leveraged **Astronomer Cosmos** to render dbt models into visual **Airflow TaskGroups**. This provides node-level retry capabilities and clear dependency mapping directly in the Airflow UI.
     - **End-to-End Reliability:** Established a "Master DAG" that enforces a strict `Ingest → Transform → Test` sequence, ensuring that downstream BI layers never consume stale or unvalidated data.
+
+  - **CI/CD - Workflow Management:**
+    - **Slim CI Pipeline:** Automated testing via GitHub Actions that identifies and tests only modified models using `state:modified+` logic. This minimizes Snowflake compute costs by deferring to production for unchanged upstream dependencies.
+    - **Ephemeral Environments:** Orchestrated an automated cleanup process that drops temporary CI schemas in Snowflake upon Pull Request closure, ensuring a clutter-free and cost-efficient warehouse.
+    - **Gatekeeping:** Strict enforcement of `dbt build` (`run` + `test`) to ensure zero-regression merges into the main branch.
 
 </br>
 
