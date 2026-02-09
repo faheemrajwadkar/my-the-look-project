@@ -198,7 +198,7 @@ erDiagram
 ## 📂 6. Project Structure
 ```bash
 ├── dags/                     # Airflow DAGs (Master Pipeline & Ingestion logic)
-├── dbt/                      # Core dbt project (Integrated via Cosmos)
+├── the_look_database/        # Core dbt project (Integrated via Cosmos)
 │   ├── macros/               # Custom SQL logic (e.g., timestamp casting)
 │   ├── models/
 │   │   ├── staging/          # Ingestion layer with source-aligned sub-folders
