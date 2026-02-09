@@ -1,5 +1,7 @@
 from airflow.decorators import dag, task
 from airflow.providers.snowflake.hooks.snowflake import SnowflakeHook
+
+from include.utils.alerts import slack_failure_callback
 from include.utils.ingestion_helpers import get_table_metadata
 from datetime import datetime
 
@@ -8,6 +10,7 @@ from datetime import datetime
     schedule=None, 
     start_date=datetime(2024, 1, 1), 
     catchup=False,
+    on_failure_callback=slack_failure_callback,
     tags=["core", "raw"],
 )
 def daily_ingestion_and_dbt():
