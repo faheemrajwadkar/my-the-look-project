@@ -4,10 +4,11 @@ from include.utils.ingestion_helpers import get_table_metadata
 from datetime import datetime
 
 @dag(
-    dag_id="__raw_pipeline",
+    dag_id="__refresh_raw_tables",
     schedule=None, 
     start_date=datetime(2024, 1, 1), 
-    catchup=False
+    catchup=False,
+    tags=["core", "raw"],
 )
 def daily_ingestion_and_dbt():
 

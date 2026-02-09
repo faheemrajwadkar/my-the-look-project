@@ -14,7 +14,7 @@ manifest_path=f"{DBT_PROJECT_PATH}/target/manifest.json"
 
 profile_config = ProfileConfig(
     profile_name = "default",
-    target_name = "dev",
+    target_name = "prod",
     profile_mapping = SnowflakeUserPasswordProfileMapping(
         conn_id = "snowflake_conn",
         profile_args={
@@ -55,4 +55,5 @@ for model in models:
         schedule=None,
         start_date=pendulum.datetime(2024, 1, 1),
         catchup=False,
+        tags=["individual"],
     )
