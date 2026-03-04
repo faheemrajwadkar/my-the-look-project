@@ -45,10 +45,11 @@ order_details_pre as (
         on o.user_id = u.user_id
         and ((o.order_created_at between u.valid_from and u.valid_to)
         or (o.order_created_at < u.user_created_at and u.valid_from = u.user_created_at))
+    where o.valid_to = DATE '9999-12-31'
 
     {% if is_incremental() %}
     
-        where o.user_id in (select user_id from users_with_new_updated_order)
+        and o.user_id in (select user_id from users_with_new_updated_order)
     
     {% endif %}
     
@@ -104,10 +105,11 @@ order_metrics as (
     from {{ ref("stg_the_look__order_items") }} oi
     left join {{ ref("stg_the_look__inventory_items") }} ii 
         on oi.inventory_item_id = ii.inventory_item_id
+    where oi.valid_to = '9999-12-31'
     
     {% if is_incremental() %}
 
-        where oi.order_id in (select order_id from updated_orders)
+        and oi.order_id in (select order_id from updated_orders)
 
     {% endif %}
     

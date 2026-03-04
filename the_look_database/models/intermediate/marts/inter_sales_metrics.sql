@@ -11,6 +11,8 @@ select
 from {{ ref("stg_the_look__order_items") }} oi
 left join {{ ref("stg_the_look__products") }} p 
     on oi.product_id = p.product_id
+    and oi.order_item_created_at between p.valid_from and p.valid_to
+where oi.valid_to = '9999-12-31'
 group by
     oi.product_id,
     p.distribution_center_id

@@ -11,6 +11,7 @@ select
 from {{ ref("stg_the_look__inventory_items") }} ii
 left join {{ ref("stg_the_look__products") }} p 
     on p.product_id = ii.product_id
+    and p.valid_to = '9999-12-31'
 group by 
     ii.product_id,
     p.distribution_center_id

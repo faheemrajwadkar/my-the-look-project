@@ -41,9 +41,11 @@ inventory_sold as (
     from {{ ref("stg_the_look__order_items") }} oi 
     left join {{ ref("stg_the_look__products") }} p
         on oi.product_id = p.product_id
+        and oi.order_item_created_at between p.valid_from and p.valid_to
     left join {{ ref("stg_the_look__inventory_items") }} ii
         on oi.inventory_item_id = ii.inventory_item_id
     where oi.order_item_status <> 'Cancelled'
+    and oi.valid_to = '9999-12-31'
     
     {% if is_incremental() %}
     
@@ -68,9 +70,11 @@ returned_items as (
     from {{ ref("stg_the_look__order_items") }} oi 
     left join {{ ref("stg_the_look__products") }} p
         on oi.product_id = p.product_id
+        and oi.order_item_created_at between p.valid_from and p.valid_to
     left join {{ ref("stg_the_look__inventory_items") }} ii
         on oi.inventory_item_id = ii.inventory_item_id
     where oi.order_item_status = 'Returned'
+    and oi.valid_to = '9999-12-31'
     
     {% if is_incremental() %}
 
@@ -244,6 +248,7 @@ products as (
     left join {{ ref("inter_product_added_dates") }} pad 
         on p.product_id = pad.product_id
     where pad.product_first_added_at is not null
+    and p.valid_to = '9999-12-31'
 ),
 
 dates as (

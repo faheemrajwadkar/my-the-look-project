@@ -5,39 +5,45 @@ models:
     description: "A dimension table representing physical warehouse locations. It includes spatial data for mapping and high-level aggregation of procurement, sales, and logistical performance per center."
     columns:
       - name: distribution_center_id
-        description: ""
+        description: "The natural/business key for the distribution center, originating from the source system."
         data_tests:
           - unique
           - not_null
 
       - name: distribution_center_sk
-        description: ""
+        description: "A static surrogate key (hash of ID) that remains constant for a distribution center across all its historical versions."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: distribution_center_version_sk
+        description: "The primary key of this table. A version-specific surrogate key (hash of ID and valid_from date) that uniquely identifies a specific state of the distribution center in time."
         data_tests:
           - unique
           - not_null
 
       - name: distribution_center_name
-        description: ""
+        description: "The display name of the distribution center."
         data_tests:
           - not_null
 
       - name: distribution_center_location_latitude
-        description: ""
+        description: "The geographic latitude coordinate of the facility."
         data_tests:
           - not_null
 
       - name: distribution_center_location_longitude
-        description: ""
+        description: "The geographic longitude coordinate of the facility."
         data_tests:
           - not_null
 
       - name: distribution_center_geom
-        description: ""
+        description: "A Snowflake GEOGRAPHY object representing the precise spatial location of the center."
         data_tests:
           - not_null
 
       - name: products_procured
-        description: ""
+        description: "Total count of unique products associated with or stocked by this distribution center."
         data_tests:
           - not_null
           - dbt_utils.expression_is_true:
@@ -45,7 +51,7 @@ models:
                 expression: ">= 0"
 
       - name: products_ordered
-        description: ""
+        description: "Total count of products from this center that have been included in customer orders."
         data_tests:
           - not_null
           - dbt_utils.expression_is_true:
@@ -53,28 +59,28 @@ models:
                 expression: ">= 0"
 
       - name: product_first_added_at
-        description: ""
+        description: "The timestamp when the first product was assigned to this distribution center's inventory."
         data_tests:
           - not_null
 
       - name: product_last_added_at
-        description: ""
+        description: "The timestamp of the most recent product addition to this distribution center's inventory."
         data_tests:
           - not_null
 
 
       - name: product_first_ordered_at
-        description: ""
+        description: "The timestamp of the first customer order fulfilled by this distribution center."
         data_tests:
           - not_null
 
       - name: product_last_ordered_at
-        description: ""
+        description: "The timestamp of the most recent customer order fulfilled by this distribution center."
         data_tests:
           - not_null
 
       - name: total_product_procurement_cost
-        description: ""
+        description: "The cumulative cost of all products procured or stocked by this center."
         data_tests:
           - not_null
           - dbt_utils.expression_is_true:
@@ -83,7 +89,7 @@ models:
 
 
       - name: products_sold_successfully
-        description: ""
+        description: "Count of items shipped from this center where the order status reached 'Complete'."
         data_tests:
           - not_null
           - dbt_utils.expression_is_true:
@@ -91,12 +97,12 @@ models:
                 expression: ">= 0"
 
       - name: product_last_sold_successfully_at
-        description: ""
+        description: "Timestamp of the most recent successfully completed sale from this center."
         data_tests:
           - not_null
 
       - name: products_returned
-        description: ""
+        description: "Total count of items originally fulfilled by this center that were subsequently returned by customers."
         data_tests:
           - not_null
           - dbt_utils.expression_is_true:
@@ -104,12 +110,12 @@ models:
                 expression: ">= 0"
 
       - name: product_last_returned_at
-        description: ""
+        description: "Timestamp of the most recent product return associated with this center."
         data_tests:
           - not_null
 
       - name: products_cancelled
-        description: ""
+        description: "Total count of items ordered from this center that were cancelled prior to completion."
         data_tests:
           - not_null
           - dbt_utils.expression_is_true:
@@ -117,12 +123,12 @@ models:
                 expression: ">= 0"
 
       - name: product_last_cancelled_at
-        description: ""
+        description: "Timestamp of the most recent order cancellation for this center."
         data_tests:
           - not_null
 
       - name: total_product_revenue
-        description: ""
+        description: "Total gross revenue generated by successful sales fulfilled by this distribution center."
         data_tests:
           - not_null
           - dbt_utils.expression_is_true:

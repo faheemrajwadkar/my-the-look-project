@@ -1,6 +1,7 @@
 with products as (
     select 
         p.product_id,
+        p.version_sk as product_version_sk,
         p.product_cost,
         p.product_category,
         p.product_name,
@@ -12,6 +13,8 @@ with products as (
     from {{ ref("stg_the_look__products") }} p 
     left join {{ ref("stg_the_look__distribution_centers") }} dc 
         on p.distribution_center_id = dc.distribution_center_id
+    where p.valid_to = '9999-12-31'
+    and dc.valid_to = '9999-12-31'
 ),
 
 inventory_metrics as (
@@ -47,6 +50,7 @@ sales_metrics as (
 select 
     p.product_id,
     {{ dbt_utils.generate_surrogate_key(["p.product_id"]) }} as product_sk,
+    product_version_sk,
     p.product_cost,
     p.product_category,
     p.product_name,

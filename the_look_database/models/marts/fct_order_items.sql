@@ -53,3 +53,4 @@ left join {{ ref("stg_the_look__users") }} u
     or (oi.order_item_created_at < u.valid_from and u.valid_from = u.user_created_at))
 left join {{ ref("dim_dates") }} dt 
     on date(oi.order_item_created_at) = dt.date
+where oi.valid_to = '9999-12-31'
