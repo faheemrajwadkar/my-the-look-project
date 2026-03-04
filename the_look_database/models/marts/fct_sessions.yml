@@ -24,7 +24,10 @@ models:
                 field: user_id
         
       - name: user_sk
-        description: "Surrogate foreign key connecting to dim_customers."
+        description: "Surrogate foreign key connecting to stg_the_look__users."
+        
+      - name: user_version_sk
+        description: "The surrogate foreign key connecting to stg_the_look__users, indicating a unique version of customer."
         
       - name: session_ip_address
         description: "The IP address recorded at the start of the session."

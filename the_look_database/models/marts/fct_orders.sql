@@ -22,28 +22,33 @@ with
 
 order_details_pre as (
     select 
-        order_id,
-        user_id,
-        row_number() over (partition by user_id order by order_created_at, order_id) as user_order_number_asc,
-        row_number() over (partition by user_id order by order_created_at desc, order_id desc) as user_order_number_desc,
-        lag(order_created_at) over (partition by user_id order by order_created_at, order_id) as user_previous_order_created_at,
-        lead(order_created_at) over (partition by user_id order by order_created_at, order_id) as user_next_order_created_at,
-        order_status,
-        user_gender,
-        order_created_at,
-        order_shipped_at,
-        datediff('minute', order_created_at, order_shipped_at) as time_to_ship_mins,
-        order_delivered_at,
-        datediff('minute', order_shipped_at, order_delivered_at) as time_to_deliver_mins,
-        datediff('minute', order_created_at, order_delivered_at) as time_to_complete_order_mins,
-        order_returned_at,
-        datediff('minute', order_delivered_at, order_returned_at) as time_to_return_mins,
-        order_num_of_item as items_ordered
-    from {{ ref("stg_the_look__orders") }}
+        o.order_id,
+        o.user_id,
+        u.user_version_sk,
+        row_number() over (partition by o.user_id order by o.order_created_at, o.order_id) as user_order_number_asc,
+        row_number() over (partition by o.user_id order by o.order_created_at desc, o.order_id desc) as user_order_number_desc,
+        lag(o.order_created_at) over (partition by o.user_id order by o.order_created_at, o.order_id) as user_previous_order_created_at,
+        lead(o.order_created_at) over (partition by o.user_id order by o.order_created_at, o.order_id) as user_next_order_created_at,
+        o.order_status,
+        o.user_gender,
+        o.order_created_at,
+        o.order_shipped_at,
+        datediff('minute', o.order_created_at, o.order_shipped_at) as time_to_ship_mins,
+        o.order_delivered_at,
+        datediff('minute', o.order_shipped_at, o.order_delivered_at) as time_to_deliver_mins,
+        datediff('minute', o.order_created_at, o.order_delivered_at) as time_to_complete_order_mins,
+        o.order_returned_at,
+        datediff('minute', o.order_delivered_at, o.order_returned_at) as time_to_return_mins,
+        o.order_num_of_item as items_ordered
+    from {{ ref("stg_the_look__orders") }} o 
+    left join {{ ref("stg_the_look__users") }} u 
+        on o.user_id = u.user_id
+        and ((o.order_created_at between u.valid_from and u.valid_to)
+        or (o.order_created_at < u.user_created_at and u.valid_from = u.user_created_at))
 
     {% if is_incremental() %}
     
-        where user_id in (select user_id from users_with_new_updated_order)
+        where o.user_id in (select user_id from users_with_new_updated_order)
     
     {% endif %}
     
@@ -53,6 +58,7 @@ order_details as (
     select 
         order_id,
         user_id,
+        user_version_sk,
         user_order_number_asc,
         case when user_order_number_asc = 1 then 1 else 0 end as is_first_order,
         user_order_number_desc,
@@ -114,6 +120,7 @@ select
     {{ dbt_utils.generate_surrogate_key(["od.order_id"]) }} as order_sk,
     od.user_id,
     {{ dbt_utils.generate_surrogate_key(["od.user_id"]) }} as user_sk,
+    od.user_version_sk,
     od.user_order_number_asc,
     od.is_first_order,
     od.user_order_number_desc,

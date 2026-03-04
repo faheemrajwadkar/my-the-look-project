@@ -20,12 +20,17 @@ with
 
 events_table as (
     select 
-        *,
-        row_number() over (partition by session_id order by sequence_number desc) as sequence_number_desc
-    from {{ ref("stg_the_look__events") }}
+        e.*,
+        u.user_version_sk,
+        row_number() over (partition by e.session_id order by e.sequence_number desc) as sequence_number_desc
+    from {{ ref("stg_the_look__events") }} e
+    left join {{ ref("stg_the_look__users") }} u 
+        on e.user_id = u.user_id 
+        and ((e.event_created_at between u.valid_from and u.valid_to)
+        or (e.event_created_at < u.user_created_at and u.user_created_at = u.valid_from))
     
     {% if is_incremental() %}
-        where session_id in (select new_session_ids from new_sessions)
+        where e.session_id in (select new_session_ids from new_sessions)
     {% endif %}
     
 ),
@@ -34,6 +39,7 @@ session_start_details as (
     select 
         session_id,
         user_id,
+        user_version_sk,
         event_ip_address as session_ip_address,
         city as session_city,
         state as session_state,
@@ -76,6 +82,7 @@ select
     {{ dbt_utils.generate_surrogate_key(["ss.session_id"]) }} as session_sk,
     ss.user_id,
     {{ dbt_utils.generate_surrogate_key(["ss.user_id"]) }} as user_sk,
+    user_version_sk,
     ss.session_ip_address,
     ss.session_city,
     ss.session_state,
