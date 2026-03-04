@@ -13,9 +13,12 @@ renamed as (
         department as product_department,
         sku as product_sku,
         distribution_center_id,
+        
+        {{ add_scd2_columns(created_at_present = 0) }},
+        
         _batched_at,
         _file_source
-    from source
+    from source s
     where dbt_valid_to = '9999-12-31'
 )
 

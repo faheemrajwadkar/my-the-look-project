@@ -1,11 +1,13 @@
 with distribution_centers as (
     select 
         distribution_center_id,
+        version_sk as distribution_center_version_sk,
         distribution_center_name,
         distribution_center_location_latitude,
         distribution_center_location_longitude,
         distribution_center_geom
     from {{ ref("stg_the_look__distribution_centers") }}
+    where valid_to = '9999-12-31'
 ),
 
 inventory_metrics as (
@@ -41,6 +43,7 @@ sales_metrics as (
 select 
     d.distribution_center_id,
     {{ dbt_utils.generate_surrogate_key(["d.distribution_center_id"]) }} as distribution_center_sk,
+    d.distribution_center_version_sk,
     d.distribution_center_name,
     d.distribution_center_location_latitude,
     d.distribution_center_location_longitude,

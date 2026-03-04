@@ -15,9 +15,12 @@ renamed as (
         {{ cast_as_timestamp("delivered_at") }} as order_item_delivered_at,
         {{ cast_as_timestamp("returned_at") }} as order_item_returned_at,
         cast(sale_price as number(38,2)) as order_item_sale_price,
+        
+        {{ add_scd2_columns(created_at_present = 0) }},
+        
         _batched_at,
         _file_source
-    from source 
+    from source s
     where dbt_valid_to = '9999-12-31'
 )
 

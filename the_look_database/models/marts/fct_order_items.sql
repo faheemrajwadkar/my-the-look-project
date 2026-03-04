@@ -25,6 +25,7 @@ select
     {{ dbt_utils.generate_surrogate_key(["oi.order_id"]) }} as order_sk,
     oi.user_id,
     {{ dbt_utils.generate_surrogate_key(["oi.user_id"]) }} as user_sk,
+    u.user_version_sk,
     oi.product_id,
     {{ dbt_utils.generate_surrogate_key(["oi.product_id"]) }} as product_sk,
     oi.inventory_item_id,
@@ -46,5 +47,10 @@ select
 from {{ ref("stg_the_look__order_items") }} oi
 left join {{ ref("stg_the_look__inventory_items") }} ii 
     on oi.inventory_item_id = ii.inventory_item_id
+left join {{ ref("stg_the_look__users") }} u 
+    on u.user_id = oi.user_id 
+    and ((oi.order_item_created_at between u.valid_from and u.valid_to)
+    or (oi.order_item_created_at < u.valid_from and u.valid_from = u.user_created_at))
 left join {{ ref("dim_dates") }} dt 
     on date(oi.order_item_created_at) = dt.date
+where oi.valid_to = '9999-12-31'

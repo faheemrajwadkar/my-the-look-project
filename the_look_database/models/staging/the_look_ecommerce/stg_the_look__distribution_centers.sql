@@ -10,10 +10,12 @@ renamed as (
         latitude as distribution_center_location_latitude,
         longitude as distribution_center_location_longitude,
         TO_GEOGRAPHY(distribution_center_geom_string) as distribution_center_geom,
+        
+        {{ add_scd2_columns(created_at_present = 0) }},
+        
         _batched_at,
         _file_source
-    from source
-    where dbt_valid_to = '9999-12-31'
+    from source s
 )
 
 select * from renamed
