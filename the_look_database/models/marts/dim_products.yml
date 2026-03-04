@@ -11,7 +11,13 @@ models:
           - not_null
         
       - name: product_sk
-        description: "The unique surrogate key (hash) generated for the data warehouse."
+        description: "The unique surrogate key (hash) generated for the product."
+        data_tests:
+          - unique
+          - not_null
+        
+      - name: product_version_sk
+        description: "The unique surrogate key (hash) generated for the product's version."
         data_tests:
           - unique
           - not_null

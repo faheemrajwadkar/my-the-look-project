@@ -36,9 +36,14 @@ models:
                 field: user_id
         
       - name: user_sk
-        description: "The surrogate foreign key connecting to dim_customers."
+        description: "The surrogate foreign key connecting to stg_the_look__users, indicating a unique customer."
         data_tests:
           - not_null
+        
+      - name: user_version_sk
+        description: "The surrogate foreign key connecting to stg_the_look__users, indicating a unique version of customer."
+        data_tests:
+          - not_null          
         
       - name: user_order_number_asc
         description: "The sequential number of this order for the user (1 = first order, 2 = second, etc.)."

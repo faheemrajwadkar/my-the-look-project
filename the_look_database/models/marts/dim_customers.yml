@@ -11,7 +11,13 @@ models:
           - not_null
 
       - name: user_sk
-        description: "The surrogate key (hash) used to uniquely identify the record in the warehouse."
+        description: "The surrogate key (hash) used to uniquely identify a user in the warehouse."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: user_version_sk
+        description: "The surrogate key (hash) used to uniquely identify each version of a user in the warehouse."
         data_tests:
           - unique
           - not_null
@@ -79,6 +85,21 @@ models:
 
       - name: user_created_at
         description: "The UTC timestamp when the user account was first created."
+        data_tests:
+          - not_null
+
+      - name: user_version_valid_from
+        description: "The UTC timestamp when the user detail was first added, or updated in the system."
+        data_tests:
+          - not_null
+      
+      - name: user_version_valid_to
+        description: "The UTC timestamp up to which the user detail in the system is valid."
+        data_tests:
+          - not_null
+      
+      - name: is_current
+        description: "A boolean flag indicating whether this version is the currently active version of the user (1) or not (0)."
         data_tests:
           - not_null
 

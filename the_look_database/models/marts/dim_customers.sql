@@ -1,6 +1,7 @@
 select 
     u.user_id,
     {{ dbt_utils.generate_surrogate_key(["u.user_id"]) }} as user_sk,
+    u.user_version_sk,
     u.user_first_name,
     u.user_last_name,
     u.user_email,
@@ -15,6 +16,9 @@ select
     u.user_longitude,
     u.user_latitude,
     u.user_created_at,
+    u.valid_from as user_version_valid_from,
+    u.valid_to as user_version_valid_to,
+    case when u.valid_to = '9999-12-31' then 1 else 0 end as is_current,
     coalesce(o.completed_orders, 0) as completed_orders,
     o.last_order_completed_at,
     coalesce(o.returned_orders, 0) as returned_orders,
@@ -29,4 +33,4 @@ select
     coalesce(o.is_active_customer, FALSE) as is_active_customer
 from {{ ref("stg_the_look__users") }} u
 left join {{ ref("inter_user_orders") }} o 
-    on u.user_id = o.user_id
+    on u.user_version_sk = o.user_version_sk

@@ -20,10 +20,16 @@ renamed as (
         traffic_source as user_traffic_source,
         {{ cast_as_timestamp("created_at") }} as user_created_at,
         TO_GEOGRAPHY(user_geom_string) user_geom,
+        {{ dbt_utils.generate_surrogate_key(["id", "dbt_valid_from"]) }} as user_version_sk,
+        case 
+            when dbt_valid_from = (select min(dbt_valid_from) from source where id = s.id) 
+            then {{ cast_as_timestamp("created_at") }} 
+            else dbt_valid_from 
+        end as valid_from,
+        dbt_valid_to as valid_to,
         _batched_at,
         _file_source
-    from source
-    where dbt_valid_to = '9999-12-31'
+    from source s
 )
 
 select * from renamed
