@@ -3,9 +3,13 @@ version: 2
 models:
   - name: dim_dates
     description: "A static calendar dimension table. It is used to join with fact table timestamps (like created_at) to enable easy filtering and grouping by standard fiscal and calendar periods without complex SQL date functions."
+    time_spine:
+      standard_granularity_column: date # column for the standard grain of your table, must be date time type.
+    
     columns:
       - name: date
         description: "The actual calendar date in YYYY-MM-DD format. The primary key of the table."
+        granularity: day
         data_tests:
           - unique
           - not_null
