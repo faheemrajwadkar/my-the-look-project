@@ -1,0 +1,147 @@
+semantic_models:
+  - name: orders_semantic_model
+    model: ref('fct_orders')
+    
+    defaults:
+      agg_time_dimension: order_created_at
+
+    entities:
+      - name: order_id 
+        type: primary
+      
+      - name: user_id
+        type: foreign
+    
+    measures:
+      - name: total_revenue
+        expr: net_revenue
+        agg: sum
+      - name: total_cost
+        expr: items_cost
+        agg: sum
+
+    dimensions:
+      - name: order_created_at
+        type: time
+        type_params:
+          time_granularity: day
+
+      - name: user_gender
+        type: categorical
+
+      - name: order_status
+        type: categorical
+
+  - name: sessions_semantic_model
+    model: ref('fct_sessions')
+
+    defaults:
+      agg_time_dimension: session_created_at
+
+    entities:
+      - name: session_id
+        type: primary 
+
+    measures:
+      - name: total_sessions
+        expr: session_id 
+        agg: count
+      
+      - name: converted_sessions
+        expr: session_id 
+        agg: count
+        
+    dimensions:
+      - name: session_created_at
+        type: time 
+        type_params:
+          time_granularity: day
+
+      - name: session_browser
+        type: categorical
+
+      - name: session_source
+        type: categorical
+
+      - name: session_result
+        type: categorical
+
+
+metrics:
+  - name: total_revenue
+    label: Total Revenue
+    type: simple
+    type_params:
+      measure: total_revenue
+    filter: |
+      {{ Dimension('order_id__order_status') }} = 'Complete'
+
+  - name: total_cost
+    label: Total Cost 
+    type: simple 
+    type_params:
+      measure: total_cost
+    filter: |
+      {{ Dimension('order_id__order_status') }} = 'Complete'
+
+  - name: profit
+    label: Total Profit
+    type: derived 
+    type_params:
+      expr: total_revenue - total_cost
+      metrics:
+        - name: total_revenue
+        - name: total_cost
+
+  - name: profit_margin
+    label: Profit Margin 
+    type: ratio
+    type_params:
+      expr: (total_revenue / total_cost) - 1
+      numerator: total_revenue
+      denominator: total_cost
+
+  - name: revenue_l30d
+    label: Revenue Last 30 Days 
+    type: cumulative
+    type_params:
+      measure: 
+        name: total_revenue
+      cumulative_type_params:
+        window: 30 days
+
+  - name: revenue_mtd
+    label: Month-to-date Revenue
+    type: cumulative
+    type_params:
+      measure: 
+        name: total_revenue
+      cumulative_type_params:
+        grain_to_date: month 
+
+  - name: total_sessions 
+    label: Total Sessions
+    type: simple 
+    type_params:
+      measure: total_sessions
+  
+  - name: converted_sessions
+    label: Converted Sessions 
+    type: simple
+    type_params:
+      measure: converted_sessions
+    filter: |
+      {{ Dimension('session_id__session_result') }} = 'purchase_completed'
+
+    
+  - name: conversion_rate
+    label: Conversion Rate 
+    type: conversion
+    type_params:
+      conversion_type_params:
+        entity: session_id
+        base_measure:
+          name: converted_sessions
+        conversion_measure: 
+          name: total_sessions
+          
